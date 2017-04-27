@@ -27,14 +27,16 @@ void EvacWorld::createAgents()
 		addAgent(agent);
 		// avoid agent in obstacle and cases where more than 1 agent occupies the same cell
 		agent->setRandomPosition();
-		int curNumAg = getValue(eObstacles, agent->getPosition());		
-//while(curNumAg ==1 || (getValue(eNumAgents, agent->getPosition()) > 0) || agent.floor != getValue(eFloor, agent->getPosition()) || (getValue(eDoors, agent->getPosition())==1) )
-		//{
-		//	agent->setRandomPosition();
-		//}
+		int curNumAg = getValue(eObstacles, agent->getPosition());
+                int currFloor = agent->floor;		
+		while(curNumAg ==1 || (getValue(eNumAgents, agent->getPosition()) > 0) || currFloor != getValue(eFloor, agent->getPosition()) || (getValue(eDoors, agent->getPosition())==1) )
+		{
+			agent->setRandomPosition();
+		}
 		//agent->setPosition(Engine::Point2D<int>(76,423));
 		//computeShortestExit(*agent); // DO I HAVE TO DO THIS THOUGH????
 		setValue(eNumAgents, agent->getPosition(), getValue(eNumAgents, agent->getPosition())+1);
+                std::cout<< "Creating agent"<< agent << "at position" << agent->getPosition() << std::endl;
 	}
 }
 
@@ -43,127 +45,136 @@ void EvacWorld::createAgents()
 
 void EvacWorld::createRasters()
 {
-//    const EvacConfig & evacConfig = (const EvacConfig &)getConfig();
-//	registerDynamicRaster("obstacles", false, eObstacles);
-//	Engine::GeneralState::rasterLoader().fillGDALRaster(getDynamicRaster(eObstacles), scenarioConfig._obstacleFile, getBoundaries());	
-//	getDynamicRaster(eObstacles).setMaxValue(1);
-//
-//	registerDynamicRaster("exits", false, eExits);
-//	getDynamicRaster(eExits).setInitValues(0, 0, 0);
-//	getDynamicRaster(eExits).setMaxValue(1);
-//
-//	registerDynamicRaster("eSigns", false, eSigns);
-//	getDynamicRaster(eSigns).setInitValues(0, 0, 0);
-//	getDynamicRaster(eSigns).setMaxValue(1);
-//
-//	registerDynamicRaster("eTempCells", false, eTempCells);
-//	getDynamicRaster(eTempCells).setInitValues(0, 0, 0);
-//	getDynamicRaster(eTempCells).setMaxValue(8);
-//
-//	registerDynamicRaster("eStairs", false, eStairs);
-//	getDynamicRaster(eStairs).setInitValues(0, 0, 0);
-//	getDynamicRaster(eStairs).setMaxValue(1);
-//
-//	registerDynamicRaster("eDoors", false, eDoors);
-//	getDynamicRaster(eDoors).setInitValues(0, 0, 0);
-//	getDynamicRaster(eDoors).setMaxValue(1);
-//
-//	registerDynamicRaster("eRoomOrCoridor", false, eRoomOrCoridor);
-//	getDynamicRaster(eRoomOrCoridor).setInitValues(0, 0, 0);
-//	getDynamicRaster(eRoomOrCoridor).setMaxValue(1);
-//        
-//	registerDynamicRaster("eChemoTaxiTrails", false, eChemoTaxiTrails);
-//	getDynamicRaster(eChemoTaxuTrails).setInitValues(0, std::numeric_limits<int>::max(), 0);
-//
-//	//Floors will not be used at the moment, but later on will be implemented
-//	/*registerDynamicRaster("eFloors", false, eChemoTaxiTrails);
-//	getDynamicRaster(eNumAgents).setInitValues(0, floorNumber-1, 0);*/
-//	
-//	registerDynamicRaster("numAgents", false, eNumAgents);
-//	getDynamicRaster(eNumAgents).setInitValues(0, std::numeric_limits<int>::max(), 0);
-//
-//	// this seems unnecessary
-//
-//	/*registerDynamicRaster("deaths", false, eDeaths);
-//	getDynamicRaster(eDeaths).setInitValues(0, std::numeric_limits<int>::max(), 0);*/
-//
-//
-//	// compute exit cells - MY UPDATED VERSION
-//
-//	Engine::Point2D<int> index(0,0);
-//	EvacConfig::ExitConfigList::const_iterator it=scenarioConfig.exitconfiglist.begin();
-//	while(it!=scenarioConfig.exitconfiglist.end())
-//	{
-//		const Engine::Point2D<int> & ext = *it;
-//		// new exit
-//        Engine::Point2D<int> index;
-//        index._x = ext._x;
-//        index._y = ext._y;
-//        setMaxValue(eExits, index, 1);
-//        setValue(eExits, index, 1); 
-//        it++; 
-//        }
-//
-//	fillExitList();
-//
-//        // PLACING OUTER WALLS AFTER EXITS
-//    for(auto index : getBoundaries())
-//	{
-//        if((getStaticRaster(eExits).getValue(index)==0) && (index._x==0 || index._y==0 || index._x==getBoundaries()._size._width-1 || index._y==getBoundaries()._size._height-1)){setMaxValue(eObstacles, index, 1);}
-//        }
-//	updateRasterToMaxValues(eObstacles);
-//
-//        //PLACING INNER WALLS
+    const EvacConfig & evacConfig = (const EvacConfig &)getConfig();
+        std::cout << "Rasters" << std::endl;
+	registerDynamicRaster("obstacles", false, eObstacles);
+	//Engine::GeneralState::rasterLoader().fillGDALRaster(getDynamicRaster(eObstacles), scenarioConfig._obstacleFile, getBoundaries());	
+	getDynamicRaster(eObstacles).setInitValues(0, 1, 0);
+	//getDynamicRaster(eObstacles).setMaxValue(1);
+
+	registerDynamicRaster("exits", false, eExits);
+	getDynamicRaster(eExits).setInitValues(0, 1, 0);
+	//getDynamicRaster(eExits).setMaxValue(1);
+
+	registerDynamicRaster("eSigns", false, eSigns);
+	getDynamicRaster(eSigns).setInitValues(0, 1, 0);
+	//getDynamicRaster(eSigns).setMaxValue(1);
+
+	registerDynamicRaster("eTempCells", false, eTempCells);
+	getDynamicRaster(eTempCells).setInitValues(0, 80, 0);
+	//getDynamicRaster(eTempCells).setMaxValue(8);
+
+	registerDynamicRaster("eStairs", false, eStairs);
+	getDynamicRaster(eStairs).setInitValues(0, 1, 0);
+	//getDynamicRaster(eStairs).setMaxValue(1);
+
+	registerDynamicRaster("eDoors", false, eDoors);
+	getDynamicRaster(eDoors).setInitValues(0, 1, 0);
+	//getDynamicRaster(eDoors).setMaxValue(1);
+
+	registerDynamicRaster("eRoomOrCoridor", false, eRoomOrCoridor);
+	getDynamicRaster(eRoomOrCoridor).setInitValues(0, 2, 0);
+	//getDynamicRaster(eRoomOrCoridor).setMaxValue(1);
+        
+	registerDynamicRaster("eChemoTaxiTrails", false, eChemoTaxiTrails);
+	getDynamicRaster(eChemoTaxiTrails).setInitValues(0, std::numeric_limits<int>::max(), 0);
+
+	//Floors will not be used at the moment, but later on will be implemented
+	/*registerDynamicRaster("eFloors", false, eChemoTaxiTrails);
+	getDynamicRaster(eNumAgents).setInitValues(0, floorNumber-1, 0);*/
+	
+	registerDynamicRaster("numAgents", false, eNumAgents);
+	getDynamicRaster(eNumAgents).setInitValues(0, std::numeric_limits<int>::max(), 0);
+
+	// this seems unnecessary
+
+	/*registerDynamicRaster("deaths", false, eDeaths);
+	getDynamicRaster(eDeaths).setInitValues(0, std::numeric_limits<int>::max(), 0);*/
+
+
+	// compute exit cells - MY UPDATED VERSION
+        std::cout << "First rasters" << std::endl;
+
+	/*Engine::Point2D<int> index(0,0);
+	////EvacConfig::ExitConfigList::const_iterator it=scenarioConfig.exitconfiglist.begin(); ' CHANGING THIS
+        EvacConfig::ExitConfigList::const_iterator it=evacConfig.exitconfiglist.begin();
+	while(it!=evacConfig.exitconfiglist.end())
+	{
+		const Engine::Point2D<int> & ext = *it;
+		// new exit
+        Engine::Point2D<int> index;
+        index._x = ext._x;
+        index._y = ext._y;
+        //setMaxValue(eExits, index, 1);
+        setValue(eExits, index, 1); 
+        it++; 
+        }
+        std::cout << "Sec rasters" << std::endl;
+	fillExitList();*/
+        std::cout << "third rasters" << std::endl;
+
+        // PLACING OUTER WALLS AFTER EXITS
+    for(auto index : getBoundaries()) 
+        {
+        //if((getStaticRaster(eExits).getValue(index)==0) && (index._x==0 || index._y==0 || index._x==getBoundaries()._size._width-1 || index._y==getBoundaries()._size._height-1)){setMaxValue(eObstacles, index, 1);}
+        if((getValue(eExits, index)==0) && (index._x==0 || index._y==0 || index._x==getBoundaries()._size._width-1 || index._y==getBoundaries()._size._height-1)){setValue(eObstacles, index, 1);} // WAS SETMAXVALUE
+        }
+	//updateRasterToMaxValues(eObstacles);
+
+        std::cout << "fourth rasters" << std::endl;
+
+//        //PLACING INNER WALLS ' TRY To COMMENT IT OUT TO XHECK ' RETURN IT AFTERWARDS
 //    for(auto index : getBoundaries())
 //        {
 //        if((index._y == floor(getBoundaries()._size._height / 2)) && ((index._x >= 0 && index._x <= floor(getBoundaries()._size._width / 3)) || ((index._x >= floor(getBoundaries()._size._width / 3) + 2) && (index._x <= floor(getBoundaries()._size._width / 2)))){setMaxValue(eObstacles, index, 1);}
 //        else if (index._x == floor(getBoundaries()._size._width / 2) && ((index._y < floor(getBoundaries()._size._height / 2))||(index._y >= 0)){setMaxValue(eObstacles, index, 1);}
 //        }
 //	updateRasterToMaxValues(eObstacles);
-//
-//
-//        //PLACING SIGNS - BUT I STILL NEED TO MODIFY THE CONFIG FILE !!!!!!!!!!! KEEP IN MIND !!!!!!!!!! SIGNS NEED TO BE CLOSE TO OBSTACLES(WALLS)
-//
-//	EvacConfig::SignList::const_iterator it=scenarioConfig.signList.begin();
-//	while(it!=scenarioConfig.signList.end())
-//	{
-//		const Engine::Point2D<int> & sign = *it;
-//		// new sign
-//        Engine::Point2D<int> index;
-//        index._x = sign._x;
-//        index._y = sign._y;
-//        setMaxValue(eSigns, index, 1);
-//        setValue(eSigns, index, 1); 
-//        it++; 
-//        }
-//        updateRasterToMaxValues(eSigns);
-//
-//        //PLAING DOORS - BUT I STILL NEED TO MODIFY THE CONFIG FILE !!!!!!!!!!! KEEP IN MIND !!!!!!!!!!
-//
-//	EvacConfig::DoorList::const_iterator it=scenarioConfig.doorList.begin();
-//	while(it!=scenarioConfig.doorList.end())
-//	{
-//		const Engine::Point2D<int> & door = *it;
-//		// new door
-//        Engine::Point2D<int> index;
-//        index._x = door._x;
-//        index._y = door._y;
-//        setMaxValue(eDoors, index, 1);
-//        setValue(eDoors, index, 1); 
-//        it++; 
-//        }
-//        updateRasterToMaxValues(eDoors);
-//
-//        //ROOM OR CORRIDOR VALUES 
-//
-//    for(auto index : getBoundaries())
-//        {
-//        if((index._y > 0) || (index._y < floor(getBoundaries()._size._height / 2)) ) && ((index._x > 0) || (index._x < floor(getBoundaries()._size._width / 2)) )){setMaxValue(eRoomOrCoridor, index, 1)}
-//        else if (getDynamicRasterValue(eDoors).getValue(index) == 1){setMaxValue(eRoomOrCoridor, index, 2}
-//        }
-//    updateRasterToMaxValues(eRoomOrCoridor);
-//   
-//       
+
+
+        //PLACING SIGNS - BUT I STILL NEED TO MODIFY THE CONFIG FILE !!!!!!!!!!! KEEP IN MIND !!!!!!!!!! SIGNS NEED TO BE CLOSE TO OBSTACLES(WALLS)
+
+	EvacConfig::SignList::const_iterator it2=evacConfig.signList.begin();
+	while(it2!=evacConfig.signList.end())
+	{
+		const Engine::Point2D<int> & sign = *it2;
+		// new sign
+        Engine::Point2D<int> index;
+        index._x = sign._x;
+        index._y = sign._y;
+        //setMaxValue(eSigns, index, 1);
+        setValue(eSigns, index, 1); 
+        it2++; 
+        }
+        //updateRasterToMaxValues(eSigns);
+
+        //PLAING DOORS - BUT I STILL NEED TO MODIFY THE CONFIG FILE !!!!!!!!!!! KEEP IN MIND !!!!!!!!!!
+
+	EvacConfig::DoorList::const_iterator it3=evacConfig.doorList.begin();
+	while(it3!=evacConfig.doorList.end())
+	{
+		const Engine::Point2D<int> & door = *it3;
+		// new door
+        Engine::Point2D<int> index;
+        index._x = door._x;
+        index._y = door._y;
+        //setMaxValue(eDoors, index, 1);
+        setValue(eDoors, index, 1); 
+        it3++; 
+        }
+        //updateRasterToMaxValues(eDoors);
+
+        //ROOM OR CORRIDOR VALUES 
+
+    for(auto index : getBoundaries())
+        {
+        if( ( (index._y > 0) || (index._y < floor(getBoundaries()._size._height / 2)) ) && ((index._x > 0) || (index._x < floor(getBoundaries()._size._width / 2)) )){setMaxValue(eRoomOrCoridor, index, 1);}
+        //else if (getDynamicRasterValue(eDoors).getValue(index) == 1){setMaxValue(eRoomOrCoridor, index, 2}
+        else if (getValue(eDoors, index) == 1){setValue(eRoomOrCoridor, index, 2);}// WAS SETMAXVALUE
+        }
+    //updateRasterToMaxValues(eRoomOrCoridor);
+   
+       std::cout << "End Rasters" << std::endl;
 }
 
 void EvacWorld::fillExitList()

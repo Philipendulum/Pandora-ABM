@@ -27,7 +27,7 @@ class EvacAgent : public Engine::Agent
 {
         int speed;
         Engine::Point2D<int> _exit; 
-        int floor; // which floor the agent is located
+
         int time; // time it takes to evacuate
         int panictime; // time the agent was in panic above **SELECT THRESHOLD**
         bool isOnStairs;
@@ -55,7 +55,9 @@ public:
 	EvacAgent( const std::string & id);
 	virtual ~EvacAgent();
 	//void setExit( const Engine::Point2D<int> & exit ); // not sure what this is
-	
+        
+
+int floor; // which floor the agent is located	
 
 //ADDING LINE TO TRY TO FIX AN ERROR
         typedef std::list<Engine::Point2D<int> > ExitsList;
