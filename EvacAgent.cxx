@@ -16,21 +16,6 @@ namespace Evacuation
 
 EvacAgent::EvacAgent( const std::string & id) : Agent(id), speed(0.0), floor(0), isOnStairs(false), exited(false), gender(0), age(0), panicked(0), currGoal(0, 0), vision(0), evacDist(0), evacTime(0)
 {
-        const EvacConfig & evacConfig = (const EvacConfig &)getWorld()->getConfig();
-	floor = Engine::GeneralState::statistics().getUniformDistValue(0, evacConfig.returnFloorNumber()-1);
-        gender = Engine::GeneralState::statistics().getUniformDistValue(0,100) > evacConfig.returnMalePerc() ? 1:0;
-	int b = Engine::GeneralState::statistics().getUniformDistValue(0,100);
-        if ((evacConfig.returnChildPerc() + evacConfig.returnElderlyPerc()) > 100) {
-             exit(8);
-        }
-        
-        if (b <= evacConfig.returnChildPerc()){ age = 0;}
-        else if ((b>evacConfig.returnChildPerc()) && (b<=(evacConfig.returnChildPerc() + evacConfig.returnElderlyPerc()))) { age = 2;}
-        else {age = 1;}
-        
-        if (age == 1) {speed = 3; vision = 200;}
-        else if (age == 2) {speed = 1; vision = 50;}
-        else if (age == 0) {speed = 2; vision = 250;}
 }
 
 EvacAgent::~EvacAgent()
