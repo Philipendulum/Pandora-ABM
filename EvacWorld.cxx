@@ -27,7 +27,8 @@ void EvacWorld::createAgents()
 		addAgent(agent);
 		// avoid agent in obstacle and cases where more than 1 agent occupies the same cell
 		agent->setRandomPosition();
-		//while((getValue(eObstacles, agent->getPosition())==1) || (getValue(eNumAgents, agent->getPosition()) > 0) || agent.floor != getValue(eFloor, agent->getPosition()) || (getValue(eDoors, agent->getPosition())==1) )
+		int curNumAg = getValue(eObstacles, agent->getPosition());		
+//while(curNumAg ==1 || (getValue(eNumAgents, agent->getPosition()) > 0) || agent.floor != getValue(eFloor, agent->getPosition()) || (getValue(eDoors, agent->getPosition())==1) )
 		//{
 		//	agent->setRandomPosition();
 		//}
@@ -302,6 +303,7 @@ void EvacWorld::stepEnvironment()
 {
         ResolveCompetition();
         //UpdateExitValues();
+	
         ResetExits();
 
 }
