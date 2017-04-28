@@ -19,17 +19,20 @@ EvacWorld::~EvacWorld()
 void EvacWorld::createAgents()
 {
     const EvacConfig & evacConfig = (const EvacConfig &)getConfig();
+        std::cout << "creating agents" << std::endl;
 	for(int i=0; i<evacConfig._numAgents; i++)
 	{
 		std::ostringstream oss;
 		oss << "EvacAgent_"<<i;
+                std::cout << "creating agents 2" << std::endl;
 		EvacAgent * agent = new EvacAgent(oss.str());
+                std::cout << "creating agents 3" << std::endl;
 		addAgent(agent);
 		// avoid agent in obstacle and cases where more than 1 agent occupies the same cell
 		agent->setRandomPosition();
 		int curNumAg = getValue(eObstacles, agent->getPosition());
                 int currFloor = agent->floor;		
-		while(curNumAg ==1 || (getValue(eNumAgents, agent->getPosition()) > 0) || currFloor != getValue(eFloor, agent->getPosition()) || (getValue(eDoors, agent->getPosition())==1) )
+		while( (curNumAg ==1) || (getValue(eNumAgents, agent->getPosition()) > 0) || (currFloor != getValue(eFloor, agent->getPosition())) || (getValue(eDoors, agent->getPosition())==1) )
 		{
 			agent->setRandomPosition();
 		}
@@ -124,16 +127,20 @@ void EvacWorld::createRasters()
         std::cout << "fourth rasters" << std::endl;
 
 //        //PLACING INNER WALLS ' TRY To COMMENT IT OUT TO XHECK ' RETURN IT AFTERWARDS
-//    for(auto index : getBoundaries())
-//        {
-//        if((index._y == floor(getBoundaries()._size._height / 2)) && ((index._x >= 0 && index._x <= floor(getBoundaries()._size._width / 3)) || ((index._x >= floor(getBoundaries()._size._width / 3) + 2) && (index._x <= floor(getBoundaries()._size._width / 2)))){setMaxValue(eObstacles, index, 1);}
-//        else if (index._x == floor(getBoundaries()._size._width / 2) && ((index._y < floor(getBoundaries()._size._height / 2))||(index._y >= 0)){setMaxValue(eObstacles, index, 1);}
-//        }
-//	updateRasterToMaxValues(eObstacles);
+    for(auto index : getBoundaries())
+        {
+        if(((index._y == floor(getBoundaries()._size._height / 2)) && ((index._x >= 0 && index._x <= floor(getBoundaries()._size._width / 3))) || (((index._x >= floor(getBoundaries()._size._width / 3) + 2)) && (index._x <= floor(getBoundaries()._size._width / 2))))) {setMaxValue(eObstacles, index, 1);}
+        else if ((index._x == floor(getBoundaries()._size._width / 2)) && ((index._y < floor(getBoundaries()._size._height / 2)) || (index._y >= 0))){setValue(eObstacles, index, 1);} // WAS SETMAXVALUE
+        }
+	//updateRasterToMaxValues(eObstacles);
 
 
         //PLACING SIGNS - BUT I STILL NEED TO MODIFY THE CONFIG FILE !!!!!!!!!!! KEEP IN MIND !!!!!!!!!! SIGNS NEED TO BE CLOSE TO OBSTACLES(WALLS)
 
+        std::cout << "fifth rasters" << std::endl;
+
+
+/*
 	EvacConfig::SignList::const_iterator it2=evacConfig.signList.begin();
 	while(it2!=evacConfig.signList.end())
 	{
@@ -145,8 +152,12 @@ void EvacWorld::createRasters()
         //setMaxValue(eSigns, index, 1);
         setValue(eSigns, index, 1); 
         it2++; 
-        }
+        }*/
+        
         //updateRasterToMaxValues(eSigns);
+
+        std::cout << "sixth rasters" << std::endl;
+
 
         //PLAING DOORS - BUT I STILL NEED TO MODIFY THE CONFIG FILE !!!!!!!!!!! KEEP IN MIND !!!!!!!!!!
 
@@ -163,6 +174,8 @@ void EvacWorld::createRasters()
         it3++; 
         }
         //updateRasterToMaxValues(eDoors);
+
+        std::cout << "seenth rasters" << std::endl;
 
         //ROOM OR CORRIDOR VALUES 
 
@@ -187,6 +200,7 @@ void EvacWorld::fillExitList()
 		}
 		_exits.push_back(index);
 	}
+        //std::cout << "EXITLISTFILLED" << std::endl;
 }
 
 
@@ -314,7 +328,6 @@ void EvacWorld::stepEnvironment()
 {
         ResolveCompetition();
         //UpdateExitValues();
-	
         ResetExits();
 
 }
