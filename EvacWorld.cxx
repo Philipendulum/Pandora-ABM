@@ -40,6 +40,7 @@ void EvacWorld::createAgents()
 		//computeShortestExit(*agent); // DO I HAVE TO DO THIS THOUGH????
 		setValue(eNumAgents, agent->getPosition(), getValue(eNumAgents, agent->getPosition())+1);
                 std::cout<< "Creating agent"<< agent << "at position" << agent->getPosition() << std::endl;
+
 	}
 }
 
