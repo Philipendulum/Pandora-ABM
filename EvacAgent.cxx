@@ -13,12 +13,21 @@ namespace Evacuation
 {
 
 
-    EvacAgent::EvacAgent( const std::string & id, double speed, int floor,  char gender, int age, int vision ) : Agent(id)
+    EvacAgent::EvacAgent( const std::string & id, double speed, int floor,  char gender, int age, int vision, bool isOnStairs, bool exited, int panicked, Engine::Point2D<int> currGoal, int evacDist, int evacTime, int notMoved) : Agent(id)
     {
-	_floor = floor ; 
+	_floor = floor; 
+        _vision = vision;
 	_age = age;
 	_gender = gender;
 	_speed = speed;
+        _isOnStairs = isOnStairs;
+        _exited = exited;
+        _panicked = panicked;
+        _currGoal._x = currGoal._x;
+        _currGoal._y = currGoal._y;
+        _evacDist = evacDist;
+        _evacTime = evacTime;
+        _notMoved = notMoved;
 	//it maybe usefull here to throw errors if, for ex: age<0, gender != {"F","M"} ....
 
     }
@@ -35,8 +44,8 @@ void EvacAgent::SetTempNextPosition()
     
 
         
- //   if (getWorld()->getValue(eRoomOrCoridor, getPosition())==1) // IN A ROOM
- //       {
+    if (getWorld()->getValue(eRoomOrCoridor, getPosition())==1) // IN A ROOM
+        {
         
         // WE NEED TO DEFINE HOW TO DEAL WITH EXITED PEOPLE ALREADY AND GO FROM LOCATED TO EXIT TO REMOVED OR SMT - Seems done?>!?!!?!?
         
@@ -51,217 +60,262 @@ void EvacAgent::SetTempNextPosition()
         
         //WHAT HAPPENS IF 0 CELLS AROUND ARE AVAILABLE ?!?!?! Model staying in same place, and maybe agressive behaviour. - Staying in same place seems OK - tempNext is position, cell occupied. Aggressive behavopir - NEED TO COME UP WITH IDEA
         
-//        if (_knowledge == 0)
-//            {
-//            int seesigns = 0;
-//            int seedoors = 0;
-//            Engine::Point2D<int> index, currentPos;
-//            currentPos = getPosition();
-//            // HOW TO DEAL WITH CORNERED VIEW BLOCKED ?!?!?!?!? IT IS STILL IN RADIUS BUT IN REALITY NOT SEEN
-//            for (index._x = currentPos._x - vision; index._x <= currentPos._x + vision; index._x++) 
-//                {
-//                for (index._y = currentPos._y - vision; index._y <= currentPos._y + vision; index._y++)
-//                    {
-//                    if ((getWorld()->getValue(eSigns, index) == 1) && (getWorld()->getValue(eRoomOrCoridor, index) == 1)) {seesigns += 1;}
-//                    else if (getWorld()->getValue(eDoors, index) == 1) {seedoors +=1;}
-//                    }
-//                }
-//            if ((seedoors > 0) || (seesigns > 0)) 
-//                {
-//                 int doorfound = 0; // when door is located, it becomes one and is recorded as the temp goal of the agent
-//                 int i = 1;
-//                 Engine::Point2D<int> radius, step;
-//                 while ((doorfound = 0) && (_knowledge == 0))
-//                     {
-//                     int count = 0;
-//                     for (radius._x = currentPos._x - i; radius._x <= currentPos._x + i; radius._x++)
-//                        {
-//                        for (radius._y = currentPos._y - i; radius._y <= currentPos._y + i; radius._y++)
-//                            {
-//                            if (getWorld()->getValue(eDoors, radius) == 1)
-//                                {
-//                                currGoal = radius;
-//                                doorfound += 1;
-//                                _knowledge = 1;
-//                                break;
-//                                }
-//                            i++;
-//                            }
-//                        }
-//                     }
-//                  }
-//            else // RANDOM WALK IF DOESNT SEE SIGN OR DOOR
-//                {
-//                tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * speed), speed);
-//                tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * speed), speed);
-//                 // HOW TO FORBID THEM TO GO THROUGH WALLS?
-//                while ((tempNextPosition._x < 0) || (tempNextPosition._x > getWorld()->getBoundaries()._size._width-1) || (tempNextPosition._y < 0) || (tempNextPosition._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, tempNextPosition) == 1) || (getWorld()->getValue(eRoomOrCoridor, tempNextPosition) != 1))
-//                    {
-//                    tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * speed), speed);
-//                    tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * speed), speed);
-//                    }
-//                getWorld()->setValue(eTempCells, tempNextPosition, getWorld()->getValue(eTempCells, (tempNextPosition)+1));
-//                }      
-//            }
-//        if (_knowledge == 1)
-//            {
-//            Engine::Point2D<int> step, currentPos;
-//            currentPos = getPosition();
-//            tempNextPosition = currentPos;
-//            int i;
-//            for (step._x = currentPos._x - speed; step._x <= currentPos._x + speed; step._x++)
-//                {
-//                for (step._y = currentPos._y - speed; step._y <= currentPos._y + speed; step._y++)
-//                    {
-//                    if (sqrt(pow((currGoal._x - step._x),2) + pow((currGoal._y - step._y),2)) <= sqrt(pow((currGoal._x - tempNextPosition._x),2) + pow((currGoal._y - tempNextPosition._y),2)) )
-//                        {
-//                        if ((step._x < 0) || (step._x > getWorld()->getBoundaries()._size._width-1) || (step._y < 0) || (step._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, step) == 1) || (getWorld()->getValue(eRoomOrCoridor, step) != 1) ) {continue;}          
-//                        // WE ALSO NEED TO DEFINE SOMEHOW THAT THE AGENTS DO NOT GO THROUGH CORNERS OR TO OTHER ROOMS
-//                        tempNextPosition = step;
-//                        }
-//                    }
-//                }
-//            getWorld()->setValue(eTempCells, tempNextPosition, getWorld()->getValue(eTempCells, (tempNextPosition)+1));
-//            }
-//        }
-//    else if (getWorld()->getValue(eRoomOrCoridor, getPosition())==0) // IN THE CORRIDOR
-//        {
-//        int seesigns = 0;
-//        Engine::Point2D<int> index, currentPos;
-//        currentPos = getPosition();
-//        // WE NEED TO MAKE SURE THE SIGNS IN THE CORRIDOR ARE DISTINGUISHED FROM THE ONES IN ROOMS AND NOT TAKE INTO ACCOUNT SIGNS IN ROOMS FOR THIS
-//        for (index._x = currentPos._x - vision; index._x <= currentPos._x + vision; index._x++) 
-//            {
-//            for (index._y = currentPos._y - vision; index._y <= currentPos._y + vision; index._y++)
-//                {
-//                if ((getWorld()->getValue(eSigns, index) == 1) && (getWorld()->getValue(eRoomOrCoridor, index)==0 )) {seesigns += 1;}
-//                }
-//            }        
-//            
-//        if ((seesigns == 0) && (_knowledge == 0)) //RANDOM WALK IF DOESNT SEE SIGNS OR DOESNT KNOW WHERE TO GO
-//             {
-//             tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * speed), speed);
-//             tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * speed), speed);
-//             // HOW TO FORBID THEM TO GO THROUGH WALLS?
-//             while ((tempNextPosition._x < 0) || (tempNextPosition._x > getWorld()->getBoundaries()._size._width-1) || (tempNextPosition._y < 0) || (tempNextPosition._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, tempNextPosition) == 1) || (getWorld()->getValue(eRoomOrCoridor, tempNextPosition) != 0) )
-//                 {
-//                 tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * speed), speed);
-//                 tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * speed), speed);
-//                 }
-//             getWorld()->setValue(eTempCells, tempNextPosition, getWorld()->getValue(eTempCells, (tempNextPosition)+1));
-//             }
-//        
-//        else if (_knowledge == 1) // HE KNOWS WHERE TO GO 
-//            {
-//            Engine::Point2D<int> step, currentPos;
-//            currentPos = getPosition();
-//            tempNextPosition = currentPos;
-//            int i = 1;
-//            for (step._x = currentPos._x - speed; step._x <= currentPos._x + speed; step._x++)
-//                {
-//                for (step._y = currentPos._y - speed; step._y <= currentPos._y + speed; step._y++)
-//                    {
-//                    if (sqrt(pow((currGoal._x - step._x),2) + pow((currGoal._y - step._y),2)) <= sqrt(pow((currGoal._x - tempNextPosition._x),2) + pow((currGoal._y - tempNextPosition._y),2)) )
-//                        {
-//                        if ((step._x < 0) || (step._x > getWorld()->getBoundaries()._size._width-1) || (step._y < 0) || (step._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, step) == 1) || (getWorld()->getValue(eRoomOrCoridor, step) != 0) ) {continue;}
-//                        tempNextPosition = step;
-//                        }
-//                    }
-//                }
-//            getWorld()->setValue(eTempCells, tempNextPosition, getWorld()->getValue(eTempCells, (tempNextPosition)+1));
-//            }
-//        else if ((_knowledge == 0) && (seesigns > 0))
-//            {
+        if (_knowledge == 0)
+            {
+            int seesigns = 0;
+            int seedoors = 0;
+            Engine::Point2D<int> index, currentPos;
+            currentPos = getPosition();
+            // HOW TO DEAL WITH CORNERED VIEW BLOCKED ?!?!?!?!? IT IS STILL IN RADIUS BUT IN REALITY NOT SEEN
+            for (index._x = currentPos._x - _vision; index._x <= currentPos._x + _vision; index._x++) 
+                {
+                for (index._y = currentPos._y - _vision; index._y <= currentPos._y + _vision; index._y++)
+                    {
+                    if ( (index._x<0) || (index._x > getWorld()->getBoundaries()._size._width-1 ) || (index._y<0) || (index._y > getWorld()->getBoundaries()._size._height-1 )){continue;}
+                    else if ((getWorld()->getValue(eSigns, index) == 1) && (getWorld()->getValue(eRoomOrCoridor, index) == 1)) {seesigns += 1;}
+                    else if (getWorld()->getValue(eDoors, index) == 1) {seedoors +=1;}
+                    }
+                }
+            if ((seedoors > 0) || (seesigns > 0)) 
+                {
+                 int doorfound = 0; // when door is located, it becomes one and is recorded as the temp goal of the agent
+                 int i = 1;
+                 Engine::Point2D<int> radius, step;
+                 while ((doorfound = 0) && (_knowledge == 0))
+                     {
+                     int count = 0;
+                     for (radius._x = currentPos._x - i; radius._x <= currentPos._x + i; radius._x++)
+                        {
+                        for (radius._y = currentPos._y - i; radius._y <= currentPos._y + i; radius._y++)
+                            {
+                            if ( (radius._x<0) || (radius._x > getWorld()->getBoundaries()._size._width-1 ) || (radius._y<0) || (radius._y > getWorld()->getBoundaries()._size._height-1 )){continue;}
+                            else if (getWorld()->getValue(eDoors, radius) == 1)
+                                {
+                                _currGoal = radius;
+                                doorfound += 1;
+                                _knowledge = 1;
+                                break;
+                                }
+                            i++;
+                            }
+                        }
+                     }
+                  }
+            else // RANDOM WALK IF DOESNT SEE SIGN OR DOOR
+                {
+                _tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
+                _tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
+                 // HOW TO FORBID THEM TO GO THROUGH WALLS?
+                while ((_tempNextPosition._x < 0) || (_tempNextPosition._x > getWorld()->getBoundaries()._size._width-1) || (_tempNextPosition._y < 0) || (_tempNextPosition._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, _tempNextPosition) == 1) || (getWorld()->getValue(eRoomOrCoridor, _tempNextPosition) != 1))
+                    {
+                    _tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
+                    _tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
+                    }
+                getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition)+1));
+                }      
+            }
+        if (_knowledge == 1)
+            {
+            Engine::Point2D<int> step, currentPos;
+            currentPos = getPosition();
+            _tempNextPosition = currentPos;
+            int i;
+            for (step._x = currentPos._x - _speed; step._x <= currentPos._x + _speed; step._x++)
+                {
+                for (step._y = currentPos._y - _speed; step._y <= currentPos._y + _speed; step._y++)
+                    {
+                    if ( (step._x<0) || (step._x > getWorld()->getBoundaries()._size._width-1 ) || (step._y<0) || (step._y > getWorld()->getBoundaries()._size._height-1 )){continue;} //PROTECT FROM OUT OF BOUNDARIES
+                    else if (sqrt(pow((_currGoal._x - step._x),2) + pow((_currGoal._y - step._y),2)) <= sqrt(pow((_currGoal._x - _tempNextPosition._x),2) + pow((_currGoal._y - _tempNextPosition._y),2)) )
+                        {
+                        if ((step._x < 0) || (step._x > getWorld()->getBoundaries()._size._width-1) || (step._y < 0) || (step._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, step) == 1) || (getWorld()->getValue(eRoomOrCoridor, step) != 1) ) {continue;}          
+                        // WE ALSO NEED TO DEFINE SOMEHOW THAT THE AGENTS DO NOT GO THROUGH CORNERS OR TO OTHER ROOMS
+                        _tempNextPosition = step;
+                        }
+                    }
+                }
+            getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition)+1));
+            }
+        }
+    else if (getWorld()->getValue(eRoomOrCoridor, getPosition())==0) // IN THE CORRIDOR
+        {
+        int seesigns = 0;
+        Engine::Point2D<int> index, currentPos;
+        currentPos = getPosition();
+        // WE NEED TO MAKE SURE THE SIGNS IN THE CORRIDOR ARE DISTINGUISHED FROM THE ONES IN ROOMS AND NOT TAKE INTO ACCOUNT SIGNS IN ROOMS FOR THIS
+        for (index._x = currentPos._x - _vision; index._x <= currentPos._x + _vision; index._x++) 
+            {
+            for (index._y = currentPos._y - _vision; index._y <= currentPos._y + _vision; index._y++)
+                {
+                if ( (index._x<0) || (index._x > getWorld()->getBoundaries()._size._width-1 ) || (index._y<0) || (index._y > getWorld()->getBoundaries()._size._height-1 )){continue;}
+                else if ((getWorld()->getValue(eSigns, index) == 1) && (getWorld()->getValue(eRoomOrCoridor, index)==0 )) {seesigns += 1;}
+                }
+            }        
+            
+        if ((seesigns == 0) && (_knowledge == 0)) //RANDOM WALK IF DOESNT SEE SIGNS OR DOESNT KNOW WHERE TO GO
+             {
+             _tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
+             _tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
+             // HOW TO FORBID THEM TO GO THROUGH WALLS?
+             while ((_tempNextPosition._x < 0) || (_tempNextPosition._x > getWorld()->getBoundaries()._size._width-1) || (_tempNextPosition._y < 0) || (_tempNextPosition._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, _tempNextPosition) == 1) || (getWorld()->getValue(eRoomOrCoridor, _tempNextPosition) != 0) )
+                 {
+                 _tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
+                 _tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
+                 }
+             getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition)+1));
+             }
+        
+        else if (_knowledge == 1) // HE KNOWS WHERE TO GO 
+            {
+            Engine::Point2D<int> step, currentPos;
+            currentPos = getPosition();
+            _tempNextPosition = currentPos;
+            int i = 1;
+            for (step._x = currentPos._x - _speed; step._x <= currentPos._x + _speed; step._x++)
+                {
+                for (step._y = currentPos._y - _speed; step._y <= currentPos._y + _speed; step._y++)
+                    {
+                    if ( (step._x<0) || (step._x > getWorld()->getBoundaries()._size._width-1 ) || (step._y<0) || (step._y > getWorld()->getBoundaries()._size._height-1 )){continue;} //protect fom out of boundaries
+                    else if (sqrt(pow((_currGoal._x - step._x),2) + pow((_currGoal._y - step._y),2)) <= sqrt(pow((_currGoal._x - _tempNextPosition._x),2) + pow((_currGoal._y - _tempNextPosition._y),2)) )
+                        {
+                        if ((step._x < 0) || (step._x > getWorld()->getBoundaries()._size._width-1) || (step._y < 0) || (step._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, step) == 1) || (getWorld()->getValue(eRoomOrCoridor, step) != 0) ) {continue;}
+                        _tempNextPosition = step;
+                        }
+                    }
+                }
+            getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition)+1));
+            }
+        else if ((_knowledge == 0) && (seesigns > 0))
+            {
 //// THIS IS THE NEW TEST LINE
-//	    Engine::World* world  = getWorld();
-//	    EvacWorld & evacWorld = (EvacWorld&) *world;
-//	    auto _exits = evacWorld.returnList();
-//            currGoal = _exits[0];
-//            int i;
-//            for (i= 0; i< _exits.size(); i++)
-//                {
-//                if (sqrt(pow((currGoal._x - getPosition()._x),2) + pow((currGoal._y - getPosition()._y),2)) >= sqrt(pow((_exits[i]._x - getPosition()._x),2) + pow((_exits[i]._y - getPosition()._y),2))) {currGoal = _exits[i];}
-//                }
-//            _knowledge = 1;
-//            // NOW SELECT STEP LIKE PREVIOUS - DONE !!!!
-//            Engine::Point2D<int> step, currentPos;
-//            currentPos = getPosition();
-//            tempNextPosition = currentPos;
-//            i = 1;
-//            for (step._x = currentPos._x - speed; step._x <= currentPos._x + speed; step._x++)
-//                {
-//                for (step._y = currentPos._y - speed; step._y <= currentPos._y + speed; step._y++)
-//                    {
-//                    if (sqrt(pow((currGoal._x - step._x),2) + pow((currGoal._y - step._y),2)) <= sqrt(pow((currGoal._x - tempNextPosition._x),2) + pow((currGoal._y - tempNextPosition._y),2)) )
-//                        {
-//                        if ((step._x < 0) || (step._x > getWorld()->getBoundaries()._size._width-1) || (step._y < 0) || (step._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, step) == 1) || (getWorld()->getValue(eRoomOrCoridor, step) != 0) ) {continue;}
-//                        tempNextPosition = step;
-//                        }
-//                    }
-//                }
-//            getWorld()->setValue(eTempCells, tempNextPosition, getWorld()->getValue(eTempCells, (tempNextPosition)+1));
-//            }
-//        }
-//    else if (getWorld()->getValue(eRoomOrCoridor, getPosition())==2) //WHEN YOU ARE AT THE DOOR
-//        {
-//        // _exits - list with exit signs
-//        _knowledge = 0;
-//        int seesigns = 0;
-//        int seeexits = 0;
-//        Engine::Point2D<int> index, currentPos;
-//        currentPos = getPosition();
-//        for (index._x = currentPos._x - vision; index._x <= currentPos._x + vision; index._x++) 
-//            {
-//            for (index._y = currentPos._y - vision; index._y <= currentPos._y + vision; index._y++)
-//                {
-//                if ((getWorld()->getValue(eSigns, index) == 1) && ((getWorld()->getValue(eRoomOrCoridor, index) == 0)) ) {seesigns += 1;}
-//                else if (getWorld()->getValue(eExits, index) == 1 ) {seeexits +=1;}
-//                }
-//            }
-//        if ((seesigns == 0) && (seeexits == 0)) // RANDOM IF DOESNT KNOW ANYTHING
-//        {
-//        tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * speed), speed);
-//        tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * speed), speed);
-//        // HOW TO FORBID THEM TO GO THROUGH WALLS?
-//        while ((tempNextPosition._x < 0) || (tempNextPosition._x > getWorld()->getBoundaries()._size._width-1) || (tempNextPosition._y < 0) || (tempNextPosition._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, tempNextPosition) == 1) || (getWorld()->getValue(eRoomOrCoridor, tempNextPosition) != 0) )
-//            {
-//            tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * speed), speed);
-//            tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * speed), speed);
-//            }
-//        getWorld()->setValue(eTempCells, tempNextPosition, getWorld()->getValue(eTempCells, (tempNextPosition)+1));
-//        }
-//        else if ((seesigns > 0) || (seeexits > 0)) //sees exits or signs 
-//            {
-//// THIS IS THE NEW TEST LINES ' TRYING A IFFERENT APPROACH RIGHT NOW
-//            Engine::World* world = getWorld();
-//            EvacWorld & evacWorld = (EvacWorld &) *world;
-//            auto _exits = evacWorld.returnList();
-//
-//            currGoal = _exits[0];
-//            int i; 
-//            for (i= 0; i< _exits.size(); i++)
-//                {
-//                if (sqrt(pow((currGoal._x - getPosition()._x),2) + pow((currGoal._y - getPosition()._y),2)) >= sqrt(pow((_exits[i]._x - getPosition()._x),2) + pow((_exits[i]._y - getPosition()._y),2))) {currGoal = _exits[i];}
-//                }
-//            _knowledge = 1;                
-//            Engine::Point2D<int> step, currentPos;
-//            currentPos = getPosition();            
-//            tempNextPosition = currentPos;
-//            i = 1;
-//            for (step._x = currentPos._x - speed; step._x <= currentPos._x + speed; step._x++)
-//                {
-//                for (step._y = currentPos._y - speed; step._y <= currentPos._y + speed; step._y++)
-//                    {
-//                    if (sqrt(pow((currGoal._x - step._x),2) + pow((currGoal._y - step._y),2)) <= sqrt(pow((currGoal._x - tempNextPosition._x),2) + pow((currGoal._y - tempNextPosition._y),2)) )
-//                        {
-//                        if ((step._x < 0) || (step._x > getWorld()->getBoundaries()._size._width-1) || (step._y < 0) || (step._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, step) == 1) || (getWorld()->getValue(eRoomOrCoridor, step) != 0) ) {continue;}
-//                        tempNextPosition = step;
-//                        }
-//                    }
-//                }
-//            getWorld()->setValue(eTempCells, tempNextPosition, getWorld()->getValue(eTempCells, (tempNextPosition)+1));
-//            }        
-//        }
+	    Engine::World* world  = getWorld();
+	    EvacWorld & evacWorld = (EvacWorld&) *world;
+	    auto _exits = evacWorld.returnList();
+
+
+// WE CHANGE THIS
+/*            _currGoal = _exits[0];
+            int i;
+            for (i= 0; i< _exits.size(); i++)
+                {
+                if (sqrt(pow((_currGoal._x - getPosition()._x),2) + pow((_currGoal._y - getPosition()._y),2)) >= sqrt(pow((_exits[i]._x - getPosition()._x),2) + pow((_exits[i]._y - getPosition()._y),2))) {_currGoal = _exits[i];}
+                }*/
+        _currGoal = evacConfig.exitconfiglist.front();
+        EvacConfig::ExitConfigList::const_iterator it4=evacConfig.exitconfiglist.begin();
+	while(it4!=evacConfig.exitconfiglist.end())
+	{
+		const Engine::Point2D<int> & ext = *it4;
+
+        if (sqrt(pow((_currGoal._x - getPosition()._x),2) + pow((_currGoal._y - getPosition()._y),2)) >= sqrt(pow((ext._x - getPosition()._x),2) + pow((ext._y - getPosition()._y),2))) {_currGoal = ext;}
+
+		// new exit ' THIS LOOKS UNNECESSARY
+        /*Engine::Point2D<int> index;
+        index._x = ext._x;
+        index._y = ext._y;
+        //setMaxValue(eExits, index, 1);
+        setValue(eExits, index, 1);*/
+
+
+        it4++; 
+        }
+            _knowledge = 1;
+            // NOW SELECT STEP LIKE PREVIOUS - DONE !!!!
+            Engine::Point2D<int> step, currentPos;
+            currentPos = getPosition();
+            _tempNextPosition = currentPos;
+            //i = 1;
+            for (step._x = currentPos._x - _speed; step._x <= currentPos._x + _speed; step._x++)
+                {
+                for (step._y = currentPos._y - _speed; step._y <= currentPos._y + _speed; step._y++)
+                    {
+                    if ( (step._x<0) || (step._x > getWorld()->getBoundaries()._size._width-1 ) || (step._y<0) || (step._y > getWorld()->getBoundaries()._size._height-1 )){continue;} //protect from ooboundariies
+                    else if (sqrt(pow((_currGoal._x - step._x),2) + pow((_currGoal._y - step._y),2)) <= sqrt(pow((_currGoal._x - _tempNextPosition._x),2) + pow((_currGoal._y - _tempNextPosition._y),2)) )
+                        {
+                        if ((step._x < 0) || (step._x > getWorld()->getBoundaries()._size._width-1) || (step._y < 0) || (step._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, step) == 1) || (getWorld()->getValue(eRoomOrCoridor, step) != 0) ) {continue;}
+                        _tempNextPosition = step;
+                        }
+                    }
+                }
+            getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition)+1));
+            }
+        }
+    else if (getWorld()->getValue(eRoomOrCoridor, getPosition())==2) //WHEN YOU ARE AT THE DOOR
+        {
+        // _exits - list with exit signs
+        _knowledge = 0;
+        int seesigns = 0;
+        int seeexits = 0;
+        Engine::Point2D<int> index, currentPos;
+        currentPos = getPosition();
+        for (index._x = currentPos._x - _vision; index._x <= currentPos._x + _vision; index._x++) 
+            {
+            for (index._y = currentPos._y - _vision; index._y <= currentPos._y + _vision; index._y++)
+                {
+                if ( (index._x<0) || (index._x > getWorld()->getBoundaries()._size._width-1 ) || (index._y<0) || (index._y > getWorld()->getBoundaries()._size._height-1 )){continue;} // protect against OOP
+                else if ((getWorld()->getValue(eSigns, index) == 1) && ((getWorld()->getValue(eRoomOrCoridor, index) == 0)) ) {seesigns += 1;}
+                else if (getWorld()->getValue(eExits, index) == 1 ) {seeexits +=1;}
+                }
+            }
+        if ((seesigns == 0) && (seeexits == 0)) // RANDOM IF DOESNT KNOW ANYTHING
+        {
+        _tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
+        _tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
+        // HOW TO FORBID THEM TO GO THROUGH WALLS?
+        while ((_tempNextPosition._x < 0) || (_tempNextPosition._x > getWorld()->getBoundaries()._size._width-1) || (_tempNextPosition._y < 0) || (_tempNextPosition._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, _tempNextPosition) == 1) || (getWorld()->getValue(eRoomOrCoridor, _tempNextPosition) != 0) )
+            {
+            _tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
+            _tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
+            }
+        getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition)+1));
+        }
+        else if ((seesigns > 0) || (seeexits > 0)) //sees exits or signs 
+            {
+// THIS IS THE NEW TEST LINES ' TRYING A IFFERENT APPROACH RIGHT NOW
+            Engine::World* world = getWorld();
+            EvacWorld & evacWorld = (EvacWorld &) *world;
+            auto _exits = evacWorld.returnList();
+
+           /* _currGoal = _exits[0];
+            int i; 
+            for (i= 0; i< _exits.size(); i++)
+                {
+                if (sqrt(pow((_currGoal._x - getPosition()._x),2) + pow((_currGoal._y - getPosition()._y),2)) >= sqrt(pow((_exits[i]._x - getPosition()._x),2) + pow((_exits[i]._y - getPosition()._y),2))) {_currGoal = _exits[i];}
+                }*/
+
+
+        _currGoal = evacConfig.exitconfiglist.front();
+        EvacConfig::ExitConfigList::const_iterator it4=evacConfig.exitconfiglist.begin();
+	while(it4!=evacConfig.exitconfiglist.end())
+	{
+		const Engine::Point2D<int> & ext = *it4;
+
+        if (sqrt(pow((_currGoal._x - getPosition()._x),2) + pow((_currGoal._y - getPosition()._y),2)) >= sqrt(pow((ext._x - getPosition()._x),2) + pow((ext._y - getPosition()._y),2))) {_currGoal = ext;}
+
+        it4++;
+        }
+
+
+            _knowledge = 1;                
+            Engine::Point2D<int> step, currentPos;
+            currentPos = getPosition();            
+            _tempNextPosition = currentPos;
+           // i = 1;
+            for (step._x = currentPos._x - _speed; step._x <= currentPos._x + _speed; step._x++)
+                {
+                for (step._y = currentPos._y - _speed; step._y <= currentPos._y + _speed; step._y++)
+                    {
+                    if ( (step._x<0) || (step._x > getWorld()->getBoundaries()._size._width-1 ) || (step._y<0) || (step._y > getWorld()->getBoundaries()._size._height-1 )){continue;} //protet against OOBound
+                    else if (sqrt(pow((_currGoal._x - step._x),2) + pow((_currGoal._y - step._y),2)) <= sqrt(pow((_currGoal._x - _tempNextPosition._x),2) + pow((_currGoal._y - _tempNextPosition._y),2)) )
+                        {
+                        if ((step._x < 0) || (step._x > getWorld()->getBoundaries()._size._width-1) || (step._y < 0) || (step._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, step) == 1) || (getWorld()->getValue(eRoomOrCoridor, step) != 0) ) {continue;}
+                        _tempNextPosition = step;
+                        }
+                    }
+                }
+            getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition)+1));
+            }        
+        }
+
+std::cout<<"SetTempNextPos correctly"<<std::endl;
 }
 
 
@@ -274,48 +328,54 @@ void EvacAgent::NextPosition() // I BELIEVE THIS SHOULD BE IN WORLD CXX
         if (getWorld()->getDynamicRaster(eTempCells).getValue(curPos) == 1)
         {
             
-            this->_evacDist = this->_evacDist + sqrt(pow((tempNextPosition._x - curPos._x),2) + pow((tempNextPosition._y - curPos._y),2));
-            setPosition(tempNextPosition);
+            this->_evacDist = this->_evacDist + sqrt(pow((_tempNextPosition._x - curPos._x),2) + pow((_tempNextPosition._y - curPos._y),2));
+            setPosition(_tempNextPosition);
             this->_evacTime++;
-            getWorld()->setValue(eChemoTaxiTrails, tempNextPosition, getWorld()->getValue(eChemoTaxiTrails, (tempNextPosition)+1));
+            getWorld()->setValue(eChemoTaxiTrails, _tempNextPosition, getWorld()->getValue(eChemoTaxiTrails, (_tempNextPosition)+1));
         }
         //else {continue;}
+
+std::cout<<"NextPosition correctly"<<std::endl;
 }
 
 
 void EvacAgent::updateState()
 {
+std::cout<<"UPDATE STATE BEGINS"<<std::endl;  
+
        const EvacConfig & evacConfig = (const EvacConfig &)getWorld()->getConfig();
        // IS THIS THE CORRECT WAY TO REMOVE EXITED AGENTS ?!?!??!?!!?!?
-       if (exited == true)
+       if (_exited == true)
         {
         return;
         }
     else if (getWorld()->getValue(eExits, getPosition()) == 1)
         {
-        exited = true;
+        _exited = true;
         getWorld()->removeAgent(this);
         }
     
-    else if(panicked >= 1) // panic increases with more not moving
+    else if(_panicked >= 1) // panic increases with more not moving
         {
-        if (notMoved > evacConfig.returnPanicTresh()) 
+        if (_notMoved > evacConfig.returnPanicTresh()) 
             {
-            panicked +=1;
-            notMoved = 0;
+            _panicked +=1;
+            _notMoved = 0;
             }
         }
         
-    else if((notMoved > evacConfig.returnPanicTresh()) && (panicked == 0))
+    else if((_notMoved > evacConfig.returnPanicTresh()) && (_panicked == 0))
         {
-        panicked = 1;
+        _panicked = 1;
         _knowledge = 0;
-        notMoved = 0;
+        _notMoved = 0;
         }
 
-    
+    std::cout<<"UpdateState continued correctly until settempnext"<<std::endl;  
         SetTempNextPosition(); // NOT SURE IF THIS HAS TO BE HERE -
         NextPosition();
+
+std::cout<<"Updatestate correctly"<<std::endl;
 
 // IDE on windows for methods ( or devian c++)
 
@@ -329,24 +389,26 @@ void EvacAgent::registerAttributes()
         registerIntAttribute("speed");
 	registerIntAttribute("notMoved");
         registerFloatAttribute("evacDist"); 
-	registerIntAttribute("evacTime");               
+	registerIntAttribute("evacTime");   
+std::cout<<"RegisterAttributes correctly"<<std::endl;            
 }
 
 void EvacAgent::serialize()
 {
     const EvacConfig & evacConfig = (const EvacConfig &)getWorld()->getConfig();
-        serializeAttribute("panicked", panicked);
+        serializeAttribute("panicked", _panicked);
         serializeAttribute("speed", _speed);
-        serializeAttribute("notMoved", notMoved);
+        serializeAttribute("notMoved", _notMoved);
         serializeAttribute("evacTime", _evacTime);
         serializeAttribute("evacDist", _evacDist);
+std::cout<<"Serialize correctly"<<std::endl;  
 
 }
 	
 std::string EvacAgent::agentCharac()
 {
 	std::ostringstream charac;
-	charac << getId() <<" is a "<<this->_gender<<" of "<<this->_age<<" yo with v:"<<this->_vision<<" and s:"<<this->_speed;
+	charac << getId() <<" is a "<<this->_gender<<" of "<<this->_age<<" yo with v:"<<this->_vision<<" and s:"<<this->_speed<<" and position"<<this->getPosition();
 	return charac.str();
     
 }

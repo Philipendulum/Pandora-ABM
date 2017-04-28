@@ -35,8 +35,8 @@ namespace Evacuation
 	int _floor; // which floor the agent is located
 	int _time; // time it takes to evacuate
 	int panictime; // time the agent was in panic above **SELECT THRESHOLD**
-	bool isOnStairs;
-	bool exited;
+	bool _isOnStairs;
+	bool _exited;
 	//Evacuation::Gender gender;
 	//Evacuation::Age age;
 	int _age;
@@ -46,10 +46,10 @@ namespace Evacuation
 	int _knowledge;
 	int _evacTime;
 	float _evacDist;
-	int panicked; // what high panic leads to ??? FIGURE OUT !!!!!!!! It leads to HARDCORE FIGHT
-	int notMoved;// how many timesteps the agent has not moved at all
-	Engine::Point2D<int> currGoal; // current goal , maybe door or exit
-	Engine::Point2D<int> tempNextPosition; // temporary next position, before competition for free cell has determined who moves. 
+	int _panicked; // what high panic leads to ??? FIGURE OUT !!!!!!!! It leads to HARDCORE FIGHT
+	int _notMoved;// how many timesteps the agent has not moved at all
+	Engine::Point2D<int> _currGoal; // current goal , maybe door or exit
+	Engine::Point2D<int> _tempNextPosition; // temporary next position, before competition for free cell has determined who moves. 
 	void NextPosition();
 	void SetTempNextPosition();
 
@@ -59,7 +59,7 @@ namespace Evacuation
 	
 
 	// todo remove environment from here
-	EvacAgent( const std::string & id, double speed, int floor,  char gender, int age, int vision ); //this will be the constructer we will use in createAgent;
+	EvacAgent( const std::string & id, double speed, int floor,  char gender, int age, int vision, bool isOnStairs, bool exited, int panicked, Engine::Point2D<int> currGoal, int evacDist, int evacTime, int notMoved); //this will be the constructer we will use in createAgent;
 	//
 	//void setExit( const Engine::Point2D<int> & exit ); // not sure what this is
 

@@ -316,10 +316,15 @@ void EvacWorld::ResolveCompetition()
 // MAKE LIST ITERATOR !!!!!
                for (int i=0; i<evacConfig._numAgents; i++)
                    {
-                    //TO ITERATE OVER ALL AGENTS 
+                    //TO ITERATE OVER ALL AGENTS
+                   std::ostringstream id; 
                    id << "EvacAgent_" << i;
+            // TWO TEST LINES
+            Engine::World* world = getWorld();
+            EvacWorld & evacWorld = (EvacWorld &) *world;
+
                    EvacAgent & agent = (EvacAgent &) (*world->getAgent(id)) ;
-                   if (agent.tempNextPos == index){evacTemps.insert(1, agent);}
+                   if (agent._tempNextPosition == index){evacTemps.push_front(agent);}
                    }
                EvacAgent *maxAgent = evacTemps.front(); 
                /*for (int i=0; i<evacTemps.size(); i++){ // PREVIOUS WAY
@@ -332,44 +337,102 @@ void EvacWorld::ResolveCompetition()
 
 
 		//_currGoal = evacConfig.exitconfiglist.front();
-		EvacWorld::EvacAgentListTemp::const_iterator it5=evacTemps.begin();
+		/*EvacWorld::*/EvacAgentListTemp::const_iterator it10=evacTemps.begin();
 		while(it5!=evacTemps.end())
 		{
 			//const Engine::Point2D<int> & ext = *it5;
-                        const EvacWorld::EvacAgent & ext = *it5;
+                        const EvacWorld::EvacAgent & ext = *it10;
 
-		if ( ext->speed > maxAgent->speed ) {maxAgent = ext;}
-                else if ((ext->speed == maxAgent->speed) && )
-
-        	it5++;
+		if ( ext->_speed > maxAgent->_speed ) {maxAgent = ext;}
+                else if ((ext->_speed == maxAgent->_speed) && (ext->_panicked >= maxAgent->_panicked)){maxAgent = ext;}
+        	it10++;
         	}
-
-
-
-
 
                // HOW ABOUT WE DON'T INSERT THE MAXAGENT AND JUST INSER ALL OF THE AGENTS THAT HAVE SAME DATA???
                //fastestCraziest.insert(1, maxAgent); // THINK HOW TO REMOVE THE DUPLICATE OF THIS maxAgent -> Removed by adding NOT EQUAL to maxAgent.id ????
-               for (int i=0; i<evacTemps.size(); i++){
-                    if ((evacTemps[i]->speed == maxAgent->speed) && (evacTemps[i]->panicLevel == maxAgent->panicLevel) /*&& (evacTemps[i].id != maxAgent.id)*/){fastestCraziest.insert(1, evacTemps[i]);}
+               /*for (int i=0; i<evacTemps.size(); i++){
+                    if ((evacTemps[i]->speed == maxAgent->speed) && (evacTemps[i]->panicLevel == maxAgent->panicLevel)){fastestCraziest.insert(1, evacTemps[i]);}
                     else continue;
-                  }
-               EvacAgent *closest = fastestCraziest[0]; // points with arrows 
-               for (int i = 0; i< fastestCraziest.size(); i++)
+                  }*/
+
+
+
+		/*EvacWorld::*/EvacAgentListTemp::const_iterator it6=evacTemps.begin();
+		while(it6!=evacTemps.end())
+		{
+                        const EvacWorld::EvacAgent & ext = *it6;
+
+                if ((ext->_speed == maxAgent->_speed) && (ext->_panicked == maxAgent->_panicLevel)){fastestCraziest.push_front(ext);}
+        	it6++;
+        	}
+
+               EvacAgent *closest = fastestCraziest.front(); 
+
+               /*for (int i = 0; i< fastestCraziest.size(); i++)
                    {
                    if (sqrt(pow((index._x - closest->position._x),2) + pow((index._y - closest->position._y),2)) >= sqrt(pow((index._x - fastestCraziest[i]->position._x),2) + pow((index._y - fastestCraziest[i]->position._y),2))) {closest = fastestCraziest[i];}
-                   }
-                
+                   }*/
+
+
+		/*EvacWorld::*/EvacAgentListTemp::const_iterator it7=fastestCraziest.begin();
+		while(it7!=fastestCraziest.end())
+		{
+                        const EvacWorld::EvacAgent & ext = *it7;
+
+                if (sqrt(pow((index._x - closest->getPosition()._x),2) + pow((index._y - closest->getPosition()._y),2)) >= sqrt(pow((index._x - ext->getPosition()._x),2) + pow((index._y - ext->getPosition()._y),2))) {closest = ext;}                
+        	it7++;
+        	}
+
                EvacAgentListTemp *closestList;
-               for (int i = 0; i< fastestCraziest.size(); i++)
+
+
+               /*for (int i = 0; i< fastestCraziest.size(); i++)
                     {
                     if (sqrt(pow((index._x - closest->position._x),2) + pow((index._y - closest->position._y),2)) == sqrt(pow((index._x - fastestCraziest[i]->position._x),2) + pow((index._y - fastestCraziest[i]->position._y),2)))
                         {
                         closestList.insert(1, fastestCraziest[i]);
                         }
-                    }
-               b = Engine::GeneralState::statistics().getUniformDistValue(0,closestList.size()-1);
-               fastestCraziest[b]->evacDist = fastestCraziest[b]->evacDist + sqrt(pow((fastestCraziest[b]->position._x - index._x),2) + pow((fastestCraziest[b]->position._y - index._y),2));
+                    }*/
+
+
+		/*EvacWorld::*/EvacAgentListTemp::const_iterator it8=fastestCraziest.begin();
+		while(it8!=fastestCraziest.end())
+		{
+                        const EvacWorld::EvacAgent & ext = *it8;
+
+                if (sqrt(pow((index._x - closest->getPosition()._x),2) + pow((index._y - closest->getPosition()._y),2)) == sqrt(pow((index._x - ext->getPosition()._x),2) + pow((index._y - ext->getPosition()._y),2))) { closestList.push_front(ext);}                
+        	it8++;
+        	}
+
+
+
+                int c = Engine::GeneralState::statistics().getUniformDistValue(0,closestList->size()-1);
+		EvacWorld::EvacAgentListTemp::const_iterator it11=fastestCraziest.begin();
+                const EvacWorld::EvacAgent & winner = *(it11 + c);
+                winner->evacDist = winner->evacDist + sqrt(pow((winner->getPosition()._x - index._x),2) + pow((winner->getPosition()._y - index._y),2));
+                winner->setPosition(index);                
+                setValue(eChemoTaxiTrails, index, getValue(eChemoTaxiTrails, index)+1));
+                winner->evacTime++;
+                fastestCraziest.erase(winner);
+
+
+
+		/*EvacWorld::*/EvacAgentListTemp::const_iterator it9=fastestCraziest.begin();
+		while(it9!=fastestCraziest.end())
+		{
+                        const EvacWorld::EvacAgent & ext = *it9;
+
+                    if (ext->id != winner->id) 
+                    { 
+                         ext->notMoved = ext->notMoved + 1;
+                         ext->evacTime++;
+                    }                
+        	it9++;
+        	}
+
+
+//ALL OF THIS IS PREVIOUS AND NOT USED
+               /*fastestCraziest[b]->evacDist = fastestCraziest[b]->evacDist + sqrt(pow((fastestCraziest[b]->position._x - index._x),2) + pow((fastestCraziest[b]->position._y - index._y),2));
                fastestCraziest[b]->setPosition(index);
                setValue(eChemoTaxiTrails, index, getValue(eChemoTaxiTrails, index)+1));
                fastestCraziest[b]->evacTime++;
@@ -380,7 +443,7 @@ void EvacWorld::ResolveCompetition()
                     
                     fastestCraziest[i]->notMoved = fastestCraziest[i]->notMoved + 1;
                     fastestCraziest[i]->evacTime++;
-                   }                   
+                   }    */               
             }
     }
 }

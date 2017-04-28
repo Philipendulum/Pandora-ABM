@@ -7,16 +7,16 @@
 	<size width="1000" height="1000"/>
 	<!-- Raster specifics -->
 	<exits>
-		<exit x="1000" y="200"/>
-		<exit x="250" y="1000"/>
+		<exit x="999" y="200"/>
+		<exit x="250" y="999"/>
 	</exits>
 	<doors>
 		<door x="334" y="500"/>
 		<door x="335" y="500"/>
 	</doors>
 	<signs>
-		<sign x="1000" y="200"/>
-		<sign x="250" y="1000"/>
+		<sign x="999" y="200"/>
+		<sign x="250" y="999"/>
 	</signs>
  
 	<environment floorNumber = "2"/>
