@@ -19,29 +19,49 @@ EvacWorld::~EvacWorld()
 void EvacWorld::createAgents()
 {
     const EvacConfig & evacConfig = (const EvacConfig &)getConfig();
-        std::cout << "creating agents" << std::endl;
-	for(int i=0; i<evacConfig._numAgents; i++)
-	{
-		std::ostringstream oss;
-		oss << "EvacAgent_"<<i;
-                std::cout << "creating agents 2" << std::endl;
-		EvacAgent * agent = new EvacAgent(oss.str());
-                std::cout << "creating agents 3" << std::endl;
-		addAgent(agent);
-		// avoid agent in obstacle and cases where more than 1 agent occupies the same cell
-		agent->setRandomPosition();
-		int curNumAg = getValue(eObstacles, agent->getPosition());
-                int currFloor = agent->floor;		
-		while( (curNumAg ==1) || (getValue(eNumAgents, agent->getPosition()) > 0) || (currFloor != getValue(eFloor, agent->getPosition())) || (getValue(eDoors, agent->getPosition())==1) )
-		{
-			agent->setRandomPosition();
-		}
-		//agent->setPosition(Engine::Point2D<int>(76,423));
-		//computeShortestExit(*agent); // DO I HAVE TO DO THIS THOUGH????
-		setValue(eNumAgents, agent->getPosition(), getValue(eNumAgents, agent->getPosition())+1);
-                std::cout<< "Creating agent"<< agent << "at position" << agent->getPosition() << std::endl;
 
-	}
+
+    for(int i=0; i<evacConfig._numAgents; i++)
+    {
+	int floor = Engine::GeneralState::statistics().getUniformDistValue(0, evacConfig.returnFloorNumber()-1);
+	char gender = ' ';
+
+        if( Engine::GeneralState::statistics().getUniformDistValue(0,100) > evacConfig.returnMalePerc()) 
+	    gender='M';
+	else
+	    gender='F';
+	int b = Engine::GeneralState::statistics().getUniformDistValue(0,100);
+	int vision=0;
+	int speed=0;
+	int age=0;
+        if ((evacConfig.returnChildPerc() + evacConfig.returnElderlyPerc()) > 100) {
+             exit(8);
+        }
+        
+        if (b <= evacConfig.returnChildPerc()){ age = 0;}
+        else if ((b>evacConfig.returnChildPerc()) && (b<=(evacConfig.returnChildPerc() + evacConfig.returnElderlyPerc()))) { age = 2;}
+        else {age = 1;}
+        //
+        if (age == 1) {speed = 3; vision = 200;}
+        else if (age == 2) {speed = 1; vision = 50;}
+	else if (age == 0) {speed = 2; vision = 250;}
+	std::ostringstream oss;
+	oss << "EvacAgent_"<<i;
+	EvacAgent * agent = new EvacAgent(oss.str(),speed,floor,gender,age,vision);
+	addAgent(agent);
+	// avoid agent in obstacle and cases where more than 1 agent occupies the same cell
+	agent->setRandomPosition();
+	//while((getValue(eObstacles, agent->getPosition())==1) || (getValue(eNumAgents, agent->getPosition()) > 0) || agent.floor != getValue(eFloor, agent->getPosition()) || (getValue(eDoors, agent->getPosition())==1) )
+	//{
+	//	agent->setRandomPosition();
+	//}
+	Engine::Point2D<int> p= new (76,423)
+	agent->setPosition();
+	//computeShortestExit(*agent); // DO I HAVE TO DO THIS THOUGH????
+	//setValue(eNumAgents, agent->getPosition(), getValue(eNumAgents, agent->getPosition())+1);
+	std::cout<<agent->agentCharac()<<std::endl;
+    }
+
 }
 
 

@@ -13,10 +13,16 @@ namespace Evacuation
 {
 
 
+    EvacAgent::EvacAgent( const std::string & id, double speed, int floor,  char gender, int age, int vision ) : Agent(id)
+    {
+	_floor = floor ; 
+	_age = age;
+	_gender = gender;
+	_speed = speed;
+	//it maybe usefull here to throw errors if, for ex: age<0, gender != {"F","M"} ....
 
-EvacAgent::EvacAgent( const std::string & id) : Agent(id), speed(0.0), floor(0), isOnStairs(false), exited(false), gender(0), age(0), panicked(0), currGoal(0, 0), vision(0), evacDist(0), evacTime(0)
-{
-}
+    }
+
 
 EvacAgent::~EvacAgent()
 {
@@ -41,11 +47,11 @@ void EvacAgent::SetTempNextPosition()
         
         //WE NEED TO DECIDE WHAT PANIC LEVEL DOES TO A PERSON IN A SITUATION. HOW DOES IT AFFECT HIS ACTIONS????? How do we model trampling?
         //we need to add attributes to count metrics = time of evacuation, total distance travelled. - ADD PARAMETERS FOR EVERY AGENT IN AGENT.CXX
-        //let it be agent.evacTime and agent.evacDist - done ?!?!?!?!
+        //let it be agent.this->_evacTime and agent.this->_evacDist - done ?!?!?!?!
         
         //WHAT HAPPENS IF 0 CELLS AROUND ARE AVAILABLE ?!?!?! Model staying in same place, and maybe agressive behaviour. - Staying in same place seems OK - tempNext is position, cell occupied. Aggressive behavopir - NEED TO COME UP WITH IDEA
         
-//        if (knowledge == 0)
+//        if (_knowledge == 0)
 //            {
 //            int seesigns = 0;
 //            int seedoors = 0;
@@ -65,7 +71,7 @@ void EvacAgent::SetTempNextPosition()
 //                 int doorfound = 0; // when door is located, it becomes one and is recorded as the temp goal of the agent
 //                 int i = 1;
 //                 Engine::Point2D<int> radius, step;
-//                 while ((doorfound = 0) && (knowledge == 0))
+//                 while ((doorfound = 0) && (_knowledge == 0))
 //                     {
 //                     int count = 0;
 //                     for (radius._x = currentPos._x - i; radius._x <= currentPos._x + i; radius._x++)
@@ -76,7 +82,7 @@ void EvacAgent::SetTempNextPosition()
 //                                {
 //                                currGoal = radius;
 //                                doorfound += 1;
-//                                knowledge = 1;
+//                                _knowledge = 1;
 //                                break;
 //                                }
 //                            i++;
@@ -97,7 +103,7 @@ void EvacAgent::SetTempNextPosition()
 //                getWorld()->setValue(eTempCells, tempNextPosition, getWorld()->getValue(eTempCells, (tempNextPosition)+1));
 //                }      
 //            }
-//        if (knowledge == 1)
+//        if (_knowledge == 1)
 //            {
 //            Engine::Point2D<int> step, currentPos;
 //            currentPos = getPosition();
@@ -132,7 +138,7 @@ void EvacAgent::SetTempNextPosition()
 //                }
 //            }        
 //            
-//        if ((seesigns == 0) && (knowledge == 0)) //RANDOM WALK IF DOESNT SEE SIGNS OR DOESNT KNOW WHERE TO GO
+//        if ((seesigns == 0) && (_knowledge == 0)) //RANDOM WALK IF DOESNT SEE SIGNS OR DOESNT KNOW WHERE TO GO
 //             {
 //             tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * speed), speed);
 //             tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * speed), speed);
@@ -145,7 +151,7 @@ void EvacAgent::SetTempNextPosition()
 //             getWorld()->setValue(eTempCells, tempNextPosition, getWorld()->getValue(eTempCells, (tempNextPosition)+1));
 //             }
 //        
-//        else if (knowledge == 1) // HE KNOWS WHERE TO GO 
+//        else if (_knowledge == 1) // HE KNOWS WHERE TO GO 
 //            {
 //            Engine::Point2D<int> step, currentPos;
 //            currentPos = getPosition();
@@ -164,7 +170,7 @@ void EvacAgent::SetTempNextPosition()
 //                }
 //            getWorld()->setValue(eTempCells, tempNextPosition, getWorld()->getValue(eTempCells, (tempNextPosition)+1));
 //            }
-//        else if ((knowledge == 0) && (seesigns > 0))
+//        else if ((_knowledge == 0) && (seesigns > 0))
 //            {
 //// THIS IS THE NEW TEST LINE
 //	    Engine::World* world  = getWorld();
@@ -176,7 +182,7 @@ void EvacAgent::SetTempNextPosition()
 //                {
 //                if (sqrt(pow((currGoal._x - getPosition()._x),2) + pow((currGoal._y - getPosition()._y),2)) >= sqrt(pow((_exits[i]._x - getPosition()._x),2) + pow((_exits[i]._y - getPosition()._y),2))) {currGoal = _exits[i];}
 //                }
-//            knowledge = 1;
+//            _knowledge = 1;
 //            // NOW SELECT STEP LIKE PREVIOUS - DONE !!!!
 //            Engine::Point2D<int> step, currentPos;
 //            currentPos = getPosition();
@@ -199,7 +205,7 @@ void EvacAgent::SetTempNextPosition()
 //    else if (getWorld()->getValue(eRoomOrCoridor, getPosition())==2) //WHEN YOU ARE AT THE DOOR
 //        {
 //        // _exits - list with exit signs
-//        knowledge = 0;
+//        _knowledge = 0;
 //        int seesigns = 0;
 //        int seeexits = 0;
 //        Engine::Point2D<int> index, currentPos;
@@ -237,7 +243,7 @@ void EvacAgent::SetTempNextPosition()
 //                {
 //                if (sqrt(pow((currGoal._x - getPosition()._x),2) + pow((currGoal._y - getPosition()._y),2)) >= sqrt(pow((_exits[i]._x - getPosition()._x),2) + pow((_exits[i]._y - getPosition()._y),2))) {currGoal = _exits[i];}
 //                }
-//            knowledge = 1;                
+//            _knowledge = 1;                
 //            Engine::Point2D<int> step, currentPos;
 //            currentPos = getPosition();            
 //            tempNextPosition = currentPos;
@@ -268,9 +274,9 @@ void EvacAgent::NextPosition() // I BELIEVE THIS SHOULD BE IN WORLD CXX
         if (getWorld()->getDynamicRaster(eTempCells).getValue(curPos) == 1)
         {
             
-            evacDist = evacDist + sqrt(pow((tempNextPosition._x - curPos._x),2) + pow((tempNextPosition._y - curPos._y),2));
+            this->_evacDist = this->_evacDist + sqrt(pow((tempNextPosition._x - curPos._x),2) + pow((tempNextPosition._y - curPos._y),2));
             setPosition(tempNextPosition);
-            evacTime++;
+            this->_evacTime++;
             getWorld()->setValue(eChemoTaxiTrails, tempNextPosition, getWorld()->getValue(eChemoTaxiTrails, (tempNextPosition)+1));
         }
         //else {continue;}
@@ -303,7 +309,7 @@ void EvacAgent::updateState()
     else if((notMoved > evacConfig.returnPanicTresh()) && (panicked == 0))
         {
         panicked = 1;
-        knowledge = 0;
+        _knowledge = 0;
         notMoved = 0;
         }
 
@@ -330,13 +336,20 @@ void EvacAgent::serialize()
 {
     const EvacConfig & evacConfig = (const EvacConfig &)getWorld()->getConfig();
         serializeAttribute("panicked", panicked);
-        serializeAttribute("speed", speed);
+        serializeAttribute("speed", _speed);
         serializeAttribute("notMoved", notMoved);
-        serializeAttribute("evacTime", evacTime);
-        serializeAttribute("evacDist", evacDist);
+        serializeAttribute("evacTime", _evacTime);
+        serializeAttribute("evacDist", _evacDist);
 
 }
 	
+std::string EvacAgent::agentCharac()
+{
+	std::ostringstream charac;
+	charac << getId() <<" is a "<<this->_gender<<" of "<<this->_age<<" yo with v:"<<this->_vision<<" and s:"<<this->_speed;
+	return charac.str();
+    
+}
 /*void EvacAgent::setExit( const Engine::Point2D<int> & exit )
 {
 	_exit = exit;
