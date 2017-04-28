@@ -30,35 +30,51 @@ void EvacWorld::createAgents()
 	    gender='M';
 	else
 	    gender='F';
-	int b = Engine::GeneralState::statistics().getUniformDistValue(0,100);
 	int vision=0;
 	int speed=0;
 	int age=0;
+        int panicked = 0;
+        Engine::Point2D<int> currGoal(0,0);
         if ((evacConfig.returnChildPerc() + evacConfig.returnElderlyPerc()) > 100) {
              exit(8);
         }
-        
+        int b = Engine::GeneralState::statistics().getUniformDistValue(0,100);
         if (b <= evacConfig.returnChildPerc()){ age = 0;}
         else if ((b>evacConfig.returnChildPerc()) && (b<=(evacConfig.returnChildPerc() + evacConfig.returnElderlyPerc()))) { age = 2;}
         else {age = 1;}
         //
-        if (age == 1) {speed = 3; vision = 200;}
-        else if (age == 2) {speed = 1; vision = 50;}
-	else if (age == 0) {speed = 2; vision = 250;}
+        if (age == 1) {
+            speed = 3; 
+            vision = 200;
+        }
+        else if (age == 2) {
+            speed = 1; 
+            vision = 50;
+        }
+	else if (age == 0) {
+        speed = 2; 
+        vision = 250;
+        }
+        bool exited = false;
+        bool isOnStairs = false;
+        int evacDist = 0;
+        int evacTime = 0;
+        int notMoved = 0;
 	std::ostringstream oss;
 	oss << "EvacAgent_"<<i;
-	EvacAgent * agent = new EvacAgent(oss.str(),speed,floor,gender,age,vision);
+	EvacAgent * agent = new EvacAgent(oss.str(),speed,floor,gender,age,vision, isOnStairs, exited, panicked, currGoal, evacDist, evacTime, notMoved);
 	addAgent(agent);
 	// avoid agent in obstacle and cases where more than 1 agent occupies the same cell
 	agent->setRandomPosition();
-	//while((getValue(eObstacles, agent->getPosition())==1) || (getValue(eNumAgents, agent->getPosition()) > 0) || agent.floor != getValue(eFloor, agent->getPosition()) || (getValue(eDoors, agent->getPosition())==1) )
-	//{
-	//	agent->setRandomPosition();
-	//}
-	Engine::Point2D<int> p= new (76,423)
-	agent->setPosition();
+        int floorValue = floor;
+	while((getValue(eObstacles, agent->getPosition())==1) || (getValue(eNumAgents, agent->getPosition()) > 0) ||/* floorValue != getValue(eFloor, agent->getPosition()) ||*/ (getValue(eDoors, agent->getPosition())==1) )
+	{
+		agent->setRandomPosition();
+	}
+	//Engine::Point2D<int> p (76,423);
+	//agent->setPosition(p);
 	//computeShortestExit(*agent); // DO I HAVE TO DO THIS THOUGH????
-	//setValue(eNumAgents, agent->getPosition(), getValue(eNumAgents, agent->getPosition())+1);
+	setValue(eNumAgents, agent->getPosition(), getValue(eNumAgents, agent->getPosition())+1);
 	std::cout<<agent->agentCharac()<<std::endl;
     }
 
@@ -119,7 +135,7 @@ void EvacWorld::createRasters()
 	// compute exit cells - MY UPDATED VERSION
         std::cout << "First rasters" << std::endl;
 
-	/*Engine::Point2D<int> index(0,0);
+	Engine::Point2D<int> index(0,0);
 	////EvacConfig::ExitConfigList::const_iterator it=scenarioConfig.exitconfiglist.begin(); ' CHANGING THIS
         EvacConfig::ExitConfigList::const_iterator it=evacConfig.exitconfiglist.begin();
 	while(it!=evacConfig.exitconfiglist.end())
@@ -133,9 +149,7 @@ void EvacWorld::createRasters()
         setValue(eExits, index, 1); 
         it++; 
         }
-        std::cout << "Sec rasters" << std::endl;
-	fillExitList();*/
-        std::cout << "third rasters" << std::endl;
+	fillExitList(); // DO I  REALLY NEED THIS _
 
         // PLACING OUTER WALLS AFTER EXITS
     for(auto index : getBoundaries()) 
@@ -161,7 +175,7 @@ void EvacWorld::createRasters()
         std::cout << "fifth rasters" << std::endl;
 
 
-/*
+
 	EvacConfig::SignList::const_iterator it2=evacConfig.signList.begin();
 	while(it2!=evacConfig.signList.end())
 	{
@@ -173,11 +187,9 @@ void EvacWorld::createRasters()
         //setMaxValue(eSigns, index, 1);
         setValue(eSigns, index, 1); 
         it2++; 
-        }*/
+        }
         
         //updateRasterToMaxValues(eSigns);
-
-        std::cout << "sixth rasters" << std::endl;
 
 
         //PLAING DOORS - BUT I STILL NEED TO MODIFY THE CONFIG FILE !!!!!!!!!!! KEEP IN MIND !!!!!!!!!!
@@ -196,7 +208,6 @@ void EvacWorld::createRasters()
         }
         //updateRasterToMaxValues(eDoors);
 
-        std::cout << "seenth rasters" << std::endl;
 
         //ROOM OR CORRIDOR VALUES 
 
@@ -239,13 +250,19 @@ void EvacWorld::UpdateExitValues()
 
 void EvacWorld::ResetExits() // RESET EXIT LIST TEMP VALUE BEFORE STARTING THE NEW ROUND OF SELECTING tempNextPos !!!!
 {
-//engine::Point2D<int> ex;
-//int i;
-//for (i=0; i< _exits.size(); i++)
-//    {
-//    ex = _exits[i];
-//    setValue(eTempCells, ex, 0) 
-//    }
+    const EvacConfig & evacConfig = (const EvacConfig &)getConfig();
+    EvacConfig::ExitConfigList::const_iterator it5=evacConfig.exitconfiglist.begin();
+	while(it5!=evacConfig.exitconfiglist.end())
+	{
+		const Engine::Point2D<int> & ext = *it5;
+		// new exit
+        Engine::Point2D<int> index;
+        index._x = ext._x;
+        index._y = ext._y;
+        setValue(eTempCells, index, 0); 
+        it5++; 
+        }
+    std::cout<<"ResetExits executed correctly"<<std::endl;
 }
 
 
@@ -287,68 +304,91 @@ void EvacWorld::ResetExits() // RESET EXIT LIST TEMP VALUE BEFORE STARTING THE N
 
 void EvacWorld::ResolveCompetition()
 {
-    //const EvacConfig & evacConfig = (const EvacConfig &)getConfig();
-    //for(auto index : getBoundaries())
-    //{
-    //    if (getDynamicRaster(eTempCells).getValue(index)< 2){continue;}
-    //    else {
-    //           typedef std::list<EvacAgent*>  EvacAgentListTemp; // dots to arrows , GIT !!!!!!!!!!
-    //           EvacAgentListTemp evacTemps = {};
-    //           EvacAgentListTemp fastestCraziest = {};
-    //           for (int i=0; i<evacConfig._numAgents; i++)
-    //               {
-    //                // HOW TO ITERATE OVER ALL AGENTS ?!?!?!!?!
-    //               id << "EvacAgent_" << i;
-    //               EvacAgent & agent = (EvacAgent &) (*world->getAgent(id)) ;
-    //               if (agent.tempNextPos == index){evacTemps.insert(1, agent);}
-    //               }
-    //           for (int i=0; i<evacTemps.size(); i++){
-    //                EvacAgent *maxAgent = evacTemps[0]; 
-    //                if (evacTemps[i]->speed > maxAgent.speed){maxAgent = evacTemps[i];}
-    //                else if ((evacTemps[i]->speed == maxAgent->speed) && (evacTemps[i]->panicLevel >= maxAgent->panicLevel)){maxAgent = evacTemps[i];}
-    //                else continue;
-    //              }
-    //           // HOW ABOUT WE DON'T INSERT THE MAXAGENT AND JUST INSER ALL OF THE AGENTS THAT HAVE SAME DATA???
-    //           //fastestCraziest.insert(1, maxAgent); // THINK HOW TO REMOVE THE DUPLICATE OF THIS maxAgent -> Removed by adding NOT EQUAL to maxAgent.id ????
-    //           for (int i=0; i<evacTemps.size(); i++){
-    //                if ((evacTemps[i]->speed == maxAgent->speed) && (evacTemps[i]->panicLevel == maxAgent->panicLevel) /*&& (evacTemps[i].id != maxAgent.id)*/){fastestCraziest.insert(1, evacTemps[i]);}
-    //                else continue;
-    //              }
-    //           EvacAgent *closest = fastestCraziest[0]; // points with arrows 
-    //           for (int i = 0; i< fastestCraziest.size(); i++)
-    //               {
-    //               if (sqrt(pow((index._x - closest->position._x),2) + pow((index._y - closest->position._y),2)) >= sqrt(pow((index._x - fastestCraziest[i]->position._x),2) + pow((index._y - fastestCraziest[i]->position._y),2))) {closest = fastestCraziest[i];}
-    //               }
-    //            
-    //           EvacAgentListTemp *closestList;
-    //           for (int i = 0; i< fastestCraziest.size(); i++)
-    //                {
-    //                if (sqrt(pow((index._x - closest->position._x),2) + pow((index._y - closest->position._y),2)) == sqrt(pow((index._x - fastestCraziest[i]->position._x),2) + pow((index._y - fastestCraziest[i]->position._y),2)))
-    //                    {
-    //                    closestList.insert(1, fastestCraziest[i]);
-    //                    }
-    //                }
-    //           b = Engine::GeneralState::statistics().getUniformDistValue(0,closestList.size()-1);
-    //           fastestCraziest[b]->evacDist = fastestCraziest[b]->evacDist + sqrt(pow((fastestCraziest[b]->position._x - index._x),2) + pow((fastestCraziest[b]->position._y - index._y),2));
-    //           fastestCraziest[b]->setPosition(index);
-    //           setValue(eChemoTaxiTrails, index, getValue(eChemoTaxiTrails, index)+1));
-    //           fastestCraziest[b]->evacTime++;
-    //           fastestCraziest.erase(b); //SOMEHOW REMOVE THE ITEM !!!!!!!!!!!!!!!!!!!!!!!!THIS SHOULD WORK ??? Is the size adjusted?!?!?!
-    //           for (int i=0; i<fastestCraziest.size(); i++){
+    const EvacConfig & evacConfig = (const EvacConfig &)getConfig();
+    for(auto index : getBoundaries())
+    {
+        if (getDynamicRaster(eTempCells).getValue(index)< 2){continue;}
+        else {
+               typedef std::list<EvacAgent*>  EvacAgentListTemp; // dots to arrows , GIT !!!!!!!!!!
+               EvacAgentListTemp evacTemps = {};
+               EvacAgentListTemp fastestCraziest = {};
+
+// MAKE LIST ITERATOR !!!!!
+               for (int i=0; i<evacConfig._numAgents; i++)
+                   {
+                    //TO ITERATE OVER ALL AGENTS 
+                   id << "EvacAgent_" << i;
+                   EvacAgent & agent = (EvacAgent &) (*world->getAgent(id)) ;
+                   if (agent.tempNextPos == index){evacTemps.insert(1, agent);}
+                   }
+               EvacAgent *maxAgent = evacTemps.front(); 
+               /*for (int i=0; i<evacTemps.size(); i++){ // PREVIOUS WAY
+                    
+                    if (evacTemps[i]->speed > maxAgent.speed){maxAgent = evacTemps[i];}
+                    else if ((evacTemps[i]->speed == maxAgent->speed) && (evacTemps[i]->panicLevel >= maxAgent->panicLevel)){maxAgent = evacTemps[i];}
+                    else continue;
+                  }*/
+
+
+
+		//_currGoal = evacConfig.exitconfiglist.front();
+		EvacWorld::EvacAgentListTemp::const_iterator it5=evacTemps.begin();
+		while(it5!=evacTemps.end())
+		{
+			//const Engine::Point2D<int> & ext = *it5;
+                        const EvacWorld::EvacAgent & ext = *it5;
+
+		if ( ext->speed > maxAgent->speed ) {maxAgent = ext;}
+                else if ((ext->speed == maxAgent->speed) && )
+
+        	it5++;
+        	}
+
+
+
+
+
+               // HOW ABOUT WE DON'T INSERT THE MAXAGENT AND JUST INSER ALL OF THE AGENTS THAT HAVE SAME DATA???
+               //fastestCraziest.insert(1, maxAgent); // THINK HOW TO REMOVE THE DUPLICATE OF THIS maxAgent -> Removed by adding NOT EQUAL to maxAgent.id ????
+               for (int i=0; i<evacTemps.size(); i++){
+                    if ((evacTemps[i]->speed == maxAgent->speed) && (evacTemps[i]->panicLevel == maxAgent->panicLevel) /*&& (evacTemps[i].id != maxAgent.id)*/){fastestCraziest.insert(1, evacTemps[i]);}
+                    else continue;
+                  }
+               EvacAgent *closest = fastestCraziest[0]; // points with arrows 
+               for (int i = 0; i< fastestCraziest.size(); i++)
+                   {
+                   if (sqrt(pow((index._x - closest->position._x),2) + pow((index._y - closest->position._y),2)) >= sqrt(pow((index._x - fastestCraziest[i]->position._x),2) + pow((index._y - fastestCraziest[i]->position._y),2))) {closest = fastestCraziest[i];}
+                   }
+                
+               EvacAgentListTemp *closestList;
+               for (int i = 0; i< fastestCraziest.size(); i++)
+                    {
+                    if (sqrt(pow((index._x - closest->position._x),2) + pow((index._y - closest->position._y),2)) == sqrt(pow((index._x - fastestCraziest[i]->position._x),2) + pow((index._y - fastestCraziest[i]->position._y),2)))
+                        {
+                        closestList.insert(1, fastestCraziest[i]);
+                        }
+                    }
+               b = Engine::GeneralState::statistics().getUniformDistValue(0,closestList.size()-1);
+               fastestCraziest[b]->evacDist = fastestCraziest[b]->evacDist + sqrt(pow((fastestCraziest[b]->position._x - index._x),2) + pow((fastestCraziest[b]->position._y - index._y),2));
+               fastestCraziest[b]->setPosition(index);
+               setValue(eChemoTaxiTrails, index, getValue(eChemoTaxiTrails, index)+1));
+               fastestCraziest[b]->evacTime++;
+               fastestCraziest.erase(b); //SOMEHOW REMOVE THE ITEM !!!!!!!!!!!!!!!!!!!!!!!!THIS SHOULD WORK ??? Is the size adjusted?!?!?!
+               for (int i=0; i<fastestCraziest.size(); i++){
     //               
-    //                //for the ones that don't move, maybe there is a chance for some random movement ??????
-    //                
-    //                fastestCraziest[i]->notMoved = fastestCraziest[i]->notMoved + 1;
-    //                fastestCraziest[i]->evacTime++;
-    //               }                   
-    //        }
-    //}
+                    //for the ones that don't move, maybe there is a chance for some random movement ??????
+                    
+                    fastestCraziest[i]->notMoved = fastestCraziest[i]->notMoved + 1;
+                    fastestCraziest[i]->evacTime++;
+                   }                   
+            }
+    }
 }
 
 void EvacWorld::stepEnvironment()
 {
         ResolveCompetition();
-        //UpdateExitValues();
+        UpdateExitValues();
         ResetExits();
 
 }
