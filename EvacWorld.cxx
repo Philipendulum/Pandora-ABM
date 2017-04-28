@@ -19,13 +19,12 @@ EvacWorld::~EvacWorld()
 void EvacWorld::createAgents()
 {
     const EvacConfig & evacConfig = (const EvacConfig &)getConfig();
-    std::cout<<"on est ou? "<<std::endl;
 
     for(int i=0; i<evacConfig._numAgents; i++)
     {
 	int floor = Engine::GeneralState::statistics().getUniformDistValue(0, evacConfig.returnFloorNumber()-1);
 	char gender = ' ';
-	std::cout<<evacConfig.returnMalePerc()<<std::endl;
+
         if( Engine::GeneralState::statistics().getUniformDistValue(0,100) > evacConfig.returnMalePerc()) 
 	    gender='M';
 	else
@@ -50,12 +49,13 @@ void EvacWorld::createAgents()
 	EvacAgent * agent = new EvacAgent(oss.str(),speed,floor,gender,age,vision);
 	addAgent(agent);
 	// avoid agent in obstacle and cases where more than 1 agent occupies the same cell
-	//agent->setRandomPosition();
+	agent->setRandomPosition();
 	//while((getValue(eObstacles, agent->getPosition())==1) || (getValue(eNumAgents, agent->getPosition()) > 0) || agent.floor != getValue(eFloor, agent->getPosition()) || (getValue(eDoors, agent->getPosition())==1) )
 	//{
 	//	agent->setRandomPosition();
 	//}
-	//agent->setPosition(Engine::Point2D<int>(76,423));
+	Engine::Point2D<int> p= new (76,423)
+	agent->setPosition();
 	//computeShortestExit(*agent); // DO I HAVE TO DO THIS THOUGH????
 	//setValue(eNumAgents, agent->getPosition(), getValue(eNumAgents, agent->getPosition())+1);
 	std::cout<<agent->agentCharac()<<std::endl;
