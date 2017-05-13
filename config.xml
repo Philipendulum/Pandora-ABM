@@ -4,25 +4,25 @@
 	<output resultsFile="./data/evacuation.h5" logsDir="./logs"/>
 	<!-- Number of Steps and Raster Sizes -->
 	<numSteps value="10" serializeResolution="1"/>
-	<size width="1000" height="1000"/>
+	<size width="100" height="100"/>
 	<!-- Raster specifics -->
 	<exits>
-		<exit x="999" y="200"/>
-		<exit x="250" y="999"/>
+		<exit1 x="99" y="20"/>
+		<exit2 x="25" y="99"/>
 	</exits>
 	<doors>
-		<door x="334" y="500"/>
-		<door x="335" y="500"/>
+		<door1 x="34" y="50"/>
+		<door2 x="35" y="50"/>
 	</doors>
 	<signs>
-		<sign x="999" y="200"/>
-		<sign x="250" y="999"/>
+		<sign1 x="99" y="20"/>
+		<sign2 x="25" y="99"/>
 	</signs>
  
 	<environment floorNumber = "2"/>
 
 	<!-- Agents Parameters  -->
-	<agents num="500" childPercentage="15" elderlyPercentage="10" malePercentage="59" notMovedPanicTreshold="20"/>
+	<agents num="10" childPercentage="15" elderlyPercentage="10" malePercentage="59" notMovedPanicTreshold="20"/>
 
 </config>
 

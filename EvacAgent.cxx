@@ -13,7 +13,7 @@ namespace Evacuation
 {
 
 
-    EvacAgent::EvacAgent( const std::string & id, double speed, int floor,  char gender, int age, int vision, bool isOnStairs, bool exited, int panicked, Engine::Point2D<int> currGoal, int evacDist, int evacTime, int notMoved) : Agent(id)
+    EvacAgent::EvacAgent( const std::string & id, double speed, int floor,  char gender, int age, int vision, bool isOnStairs, bool exited, int panicked, Engine::Point2D<int> currGoal,/* Engine::Point2D<int> tempNextPosition,*/ int evacDist, int evacTime, int notMoved) : Agent(id)
     {
 	_floor = floor; 
         _vision = vision;
@@ -25,6 +25,8 @@ namespace Evacuation
         _panicked = panicked;
         _currGoal._x = currGoal._x;
         _currGoal._y = currGoal._y;
+        //_tempNextPosition._x = tempNextPosition._x;
+        //_tempNextPosition._y = tempNextPosition._y;
         _evacDist = evacDist;
         _evacTime = evacTime;
         _notMoved = notMoved;
@@ -76,33 +78,38 @@ void EvacAgent::SetTempNextPosition()
                     else if (getWorld()->getValue(eDoors, index) == 1) {seedoors +=1;}
                     }
                 }
-            if ((seedoors > 0) || (seesigns > 0)) 
+            if (((seedoors > 0) || (seesigns > 0)) && (this->_knowledge == 0)) // 15.05.2017 WAS if ((seedoors > 0) || (seesigns > 0))
                 {
+                std::cout << "SEEDORS OR SEESIGNS MORE THAN 0" <<std::endl;
                  int doorfound = 0; // when door is located, it becomes one and is recorded as the temp goal of the agent
                  int i = 1;
                  Engine::Point2D<int> radius, step;
-                 while ((doorfound = 0) && (_knowledge == 0))
+                 while ((doorfound == 0) && (this->_knowledge == 0))
                      {
-                     int count = 0;
+                            std::cout << "!!!!!!!!!!!!!!!!!!!!!! i EQUAL" << i <<std::endl;
+                     //int count = 0;
                      for (radius._x = currentPos._x - i; radius._x <= currentPos._x + i; radius._x++)
                         {
                         for (radius._y = currentPos._y - i; radius._y <= currentPos._y + i; radius._y++)
                             {
+
                             if ( (radius._x<0) || (radius._x > getWorld()->getBoundaries()._size._width-1 ) || (radius._y<0) || (radius._y > getWorld()->getBoundaries()._size._height-1 )){continue;}
                             else if (getWorld()->getValue(eDoors, radius) == 1)
                                 {
-                                _currGoal = radius;
+                                this->_currGoal = radius;
                                 doorfound += 1;
-                                _knowledge = 1;
-                                break;
+                                this->_knowledge = 1;
+                                std::cout << "!!!!!!!!!!!!!!!!!!!!!! DOORFOUND 1 CURRGOAL SHOULD BE UPDATED" <<std::endl;
+                                //break;
                                 }
-                            i++;
                             }
                         }
+                     i++;
                      }
                   }
-            else // RANDOM WALK IF DOESNT SEE SIGN OR DOOR
+            else if((seedoors == 0) && (seesigns == 0))// RANDOM WALK IF DOESNT SEE SIGN OR DOOR
                 {
+                std::cout << "SEEDORS OR SEESIGNS EQUAL 0" <<std::endl;
                 _tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
                 _tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
                  // HOW TO FORBID THEM TO GO THROUGH WALLS?
@@ -111,14 +118,14 @@ void EvacAgent::SetTempNextPosition()
                     _tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
                     _tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
                     }
-                getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition)+1));
+                getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition))+1);
                 }      
             }
-        if (_knowledge == 1)
+        else if (_knowledge == 1) //else added 13.05.2017
             {
             Engine::Point2D<int> step, currentPos;
             currentPos = getPosition();
-            _tempNextPosition = currentPos;
+            _tempNextPosition = currentPos; //_currGoal; //added 15.05.2017, was _tempNextPosition = currentPos;
             int i;
             for (step._x = currentPos._x - _speed; step._x <= currentPos._x + _speed; step._x++)
                 {
@@ -127,13 +134,13 @@ void EvacAgent::SetTempNextPosition()
                     if ( (step._x<0) || (step._x > getWorld()->getBoundaries()._size._width-1 ) || (step._y<0) || (step._y > getWorld()->getBoundaries()._size._height-1 )){continue;} //PROTECT FROM OUT OF BOUNDARIES
                     else if (sqrt(pow((_currGoal._x - step._x),2) + pow((_currGoal._y - step._y),2)) <= sqrt(pow((_currGoal._x - _tempNextPosition._x),2) + pow((_currGoal._y - _tempNextPosition._y),2)) )
                         {
-                        if ((step._x < 0) || (step._x > getWorld()->getBoundaries()._size._width-1) || (step._y < 0) || (step._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, step) == 1) || (getWorld()->getValue(eRoomOrCoridor, step) != 1) ) {continue;}          
+                        if ((step._x < 0) || (step._x > getWorld()->getBoundaries()._size._width-1) || (step._y < 0) || (step._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, step) == 1) || (getWorld()->getValue(eRoomOrCoridor, step) == 0) ) {continue;} // here we define that the agent cant jump to the corridor. 1 is room and 2 is door         
                         // WE ALSO NEED TO DEFINE SOMEHOW THAT THE AGENTS DO NOT GO THROUGH CORNERS OR TO OTHER ROOMS
                         _tempNextPosition = step;
                         }
                     }
                 }
-            getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition)+1));
+            getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition))+1);
             }
         }
     else if (getWorld()->getValue(eRoomOrCoridor, getPosition())==0) // IN THE CORRIDOR
@@ -161,7 +168,7 @@ void EvacAgent::SetTempNextPosition()
                  _tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
                  _tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
                  }
-             getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition)+1));
+             getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition))+1);
              }
         
         else if (_knowledge == 1) // HE KNOWS WHERE TO GO 
@@ -177,12 +184,12 @@ void EvacAgent::SetTempNextPosition()
                     if ( (step._x<0) || (step._x > getWorld()->getBoundaries()._size._width-1 ) || (step._y<0) || (step._y > getWorld()->getBoundaries()._size._height-1 )){continue;} //protect fom out of boundaries
                     else if (sqrt(pow((_currGoal._x - step._x),2) + pow((_currGoal._y - step._y),2)) <= sqrt(pow((_currGoal._x - _tempNextPosition._x),2) + pow((_currGoal._y - _tempNextPosition._y),2)) )
                         {
-                        if ((step._x < 0) || (step._x > getWorld()->getBoundaries()._size._width-1) || (step._y < 0) || (step._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, step) == 1) || (getWorld()->getValue(eRoomOrCoridor, step) != 0) ) {continue;}
-                        _tempNextPosition = step;
+                        if ((step._x < 0) || (step._x > getWorld()->getBoundaries()._size._width-1) || (step._y < 0) || (step._y > getWorld()->getBoundaries()._size._height-1)) {continue;}
+                        else if ((getWorld()->getValue(eObstacles, step) != 1) && (getWorld()->getValue(eRoomOrCoridor, step) == 0)) {_tempNextPosition = step;}
                         }
                     }
                 }
-            getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition)+1));
+            getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition))+1);
             }
         else if ((_knowledge == 0) && (seesigns > 0))
             {
@@ -235,7 +242,7 @@ void EvacAgent::SetTempNextPosition()
                         }
                     }
                 }
-            getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition)+1));
+            getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition))+1);
             }
         }
     else if (getWorld()->getValue(eRoomOrCoridor, getPosition())==2) //WHEN YOU ARE AT THE DOOR
@@ -265,7 +272,7 @@ void EvacAgent::SetTempNextPosition()
             _tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
             _tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
             }
-        getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition)+1));
+        getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition))+1);
         }
         else if ((seesigns > 0) || (seeexits > 0)) //sees exits or signs 
             {
@@ -311,32 +318,13 @@ void EvacAgent::SetTempNextPosition()
                         }
                     }
                 }
-            getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition)+1));
+            getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition))+1);
             }        
         }
 
 std::cout<<"SetTempNextPos correctly"<<std::endl;
 }
 
-
-
-
-void EvacAgent::NextPosition() // I BELIEVE THIS SHOULD BE IN WORLD CXX
-{
-    const EvacConfig & evacConfig = (const EvacConfig &)getWorld()->getConfig();
-        Engine::Point2D<int> curPos = getPosition();    
-        if (getWorld()->getDynamicRaster(eTempCells).getValue(curPos) == 1)
-        {
-            
-            this->_evacDist = this->_evacDist + sqrt(pow((_tempNextPosition._x - curPos._x),2) + pow((_tempNextPosition._y - curPos._y),2));
-            setPosition(_tempNextPosition);
-            this->_evacTime++;
-            getWorld()->setValue(eChemoTaxiTrails, _tempNextPosition, getWorld()->getValue(eChemoTaxiTrails, (_tempNextPosition)+1));
-        }
-        //else {continue;}
-
-std::cout<<"NextPosition correctly"<<std::endl;
-}
 
 
 void EvacAgent::updateState()
@@ -373,7 +361,7 @@ std::cout<<"UPDATE STATE BEGINS"<<std::endl;
 
     std::cout<<"UpdateState continued correctly until settempnext"<<std::endl;  
         SetTempNextPosition(); // NOT SURE IF THIS HAS TO BE HERE -
-        NextPosition();
+//        NextPosition();
 
 std::cout<<"Updatestate correctly"<<std::endl;
 
@@ -387,10 +375,16 @@ void EvacAgent::registerAttributes()
     const EvacConfig & evacConfig = (const EvacConfig &)getWorld()->getConfig();
         registerIntAttribute("panicked");
         registerIntAttribute("speed");
+        registerIntAttribute("knowledge");
 	registerIntAttribute("notMoved");
         registerFloatAttribute("evacDist"); 
-	registerIntAttribute("evacTime");   
-std::cout<<"RegisterAttributes correctly"<<std::endl;            
+	registerIntAttribute("evacTime"); 
+	registerIntAttribute("tempNextPosition_x"); 
+	registerIntAttribute("tempNextPosition_y");
+	registerIntAttribute("currGoal_x");
+	registerIntAttribute("currGoal_y");
+        //registerIntAttribute("tempNextPosition");  
+        std::cout<<"RegisterAttributes correctly"<<std::endl;          
 }
 
 void EvacAgent::serialize()
@@ -398,11 +392,15 @@ void EvacAgent::serialize()
     const EvacConfig & evacConfig = (const EvacConfig &)getWorld()->getConfig();
         serializeAttribute("panicked", _panicked);
         serializeAttribute("speed", _speed);
+        serializeAttribute("knowledge", _knowledge);
         serializeAttribute("notMoved", _notMoved);
         serializeAttribute("evacTime", _evacTime);
         serializeAttribute("evacDist", _evacDist);
-std::cout<<"Serialize correctly"<<std::endl;  
-
+        serializeAttribute("tempNextPosition_x", _tempNextPosition._x);      
+        serializeAttribute("tempNextPosition_y", _tempNextPosition._y);   
+        serializeAttribute("currGoal_x", _currGoal._x);   
+        serializeAttribute("currGoal_y", _currGoal._y);     
+        std::cout<<"Serialize correctly"<<std::endl;  
 }
 	
 std::string EvacAgent::agentCharac()
@@ -419,4 +417,6 @@ std::string EvacAgent::agentCharac()
 
 } // namespace Evacuation
 
+
+// rabndom number seed 
 

@@ -52,12 +52,13 @@ class EvacWorld: public Engine::World
 	ExitsList _exits;
 	void createAgents();
 	void createRasters();
-
+         
+        void NextPosition();
 	void fillExitList();
 	void stepEnvironment();
         void ResolveCompetition();
         void ResetExits();
-        void UpdateExitValues();
+        void UpdateTempValues();
 
  
 

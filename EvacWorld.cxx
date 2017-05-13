@@ -35,6 +35,8 @@ void EvacWorld::createAgents()
 	int age=0;
         int panicked = 0;
         Engine::Point2D<int> currGoal(0,0);
+        Engine::Point2D<int> tempNextPosition(10,10);
+
         if ((evacConfig.returnChildPerc() + evacConfig.returnElderlyPerc()) > 100) {
              exit(8);
         }
@@ -45,15 +47,15 @@ void EvacWorld::createAgents()
         //
         if (age == 1) {
             speed = 3; 
-            vision = 200;
+            vision = 50;
         }
         else if (age == 2) {
             speed = 1; 
-            vision = 50;
+            vision = 20;
         }
 	else if (age == 0) {
         speed = 2; 
-        vision = 250;
+        vision = 35;
         }
         bool exited = false;
         bool isOnStairs = false;
@@ -87,43 +89,46 @@ void EvacWorld::createRasters()
 {
     const EvacConfig & evacConfig = (const EvacConfig &)getConfig();
         std::cout << "Rasters" << std::endl;
-	registerDynamicRaster("obstacles", false, eObstacles);
+	registerDynamicRaster("obstacles", true, eObstacles);
 	//Engine::GeneralState::rasterLoader().fillGDALRaster(getDynamicRaster(eObstacles), scenarioConfig._obstacleFile, getBoundaries());	
 	getDynamicRaster(eObstacles).setInitValues(0, 1, 0);
 	//getDynamicRaster(eObstacles).setMaxValue(1);
 
-	registerDynamicRaster("exits", false, eExits);
+	registerDynamicRaster("exits", true, eExits);
 	getDynamicRaster(eExits).setInitValues(0, 1, 0);
 	//getDynamicRaster(eExits).setMaxValue(1);
 
-	registerDynamicRaster("eSigns", false, eSigns);
+	registerDynamicRaster("eSigns", true, eSigns);
 	getDynamicRaster(eSigns).setInitValues(0, 1, 0);
 	//getDynamicRaster(eSigns).setMaxValue(1);
 
-	registerDynamicRaster("eTempCells", false, eTempCells);
+	registerDynamicRaster("eTempCells", true, eTempCells);
 	getDynamicRaster(eTempCells).setInitValues(0, 80, 0);
 	//getDynamicRaster(eTempCells).setMaxValue(8);
 
-	registerDynamicRaster("eStairs", false, eStairs);
+
+        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! I NEED A RASTER WITH VALUES OF CURRENT CELLS OCCUPIED BY AGENTS, SIMILAR OT TEMPCELLS
+
+	registerDynamicRaster("eStairs", true, eStairs);
 	getDynamicRaster(eStairs).setInitValues(0, 1, 0);
 	//getDynamicRaster(eStairs).setMaxValue(1);
 
-	registerDynamicRaster("eDoors", false, eDoors);
+	registerDynamicRaster("eDoors", true, eDoors);
 	getDynamicRaster(eDoors).setInitValues(0, 1, 0);
 	//getDynamicRaster(eDoors).setMaxValue(1);
 
-	registerDynamicRaster("eRoomOrCoridor", false, eRoomOrCoridor);
+	registerDynamicRaster("eRoomOrCoridor", true, eRoomOrCoridor);
 	getDynamicRaster(eRoomOrCoridor).setInitValues(0, 2, 0);
 	//getDynamicRaster(eRoomOrCoridor).setMaxValue(1);
         
-	registerDynamicRaster("eChemoTaxiTrails", false, eChemoTaxiTrails);
+	registerDynamicRaster("eChemoTaxiTrails", true, eChemoTaxiTrails);
 	getDynamicRaster(eChemoTaxiTrails).setInitValues(0, std::numeric_limits<int>::max(), 0);
 
 	//Floors will not be used at the moment, but later on will be implemented
 	/*registerDynamicRaster("eFloors", false, eChemoTaxiTrails);
 	getDynamicRaster(eNumAgents).setInitValues(0, floorNumber-1, 0);*/
 	
-	registerDynamicRaster("numAgents", false, eNumAgents);
+	registerDynamicRaster("numAgents", true, eNumAgents);
 	getDynamicRaster(eNumAgents).setInitValues(0, std::numeric_limits<int>::max(), 0);
 
 	// this seems unnecessary
@@ -164,8 +169,8 @@ void EvacWorld::createRasters()
 //        //PLACING INNER WALLS ' TRY To COMMENT IT OUT TO XHECK ' RETURN IT AFTERWARDS
     for(auto index : getBoundaries())
         {
-        if(((index._y == floor(getBoundaries()._size._height / 2)) && ((index._x >= 0 && index._x <= floor(getBoundaries()._size._width / 3))) || (((index._x >= floor(getBoundaries()._size._width / 3) + 2)) && (index._x <= floor(getBoundaries()._size._width / 2))))) {setMaxValue(eObstacles, index, 1);}
-        else if ((index._x == floor(getBoundaries()._size._width / 2)) && ((index._y < floor(getBoundaries()._size._height / 2)) || (index._y >= 0))){setValue(eObstacles, index, 1);} // WAS SETMAXVALUE
+        if(  ((index._y == floor(getBoundaries()._size._height / 2)) && (((index._x >= 0) && (index._x <= floor(getBoundaries()._size._width / 3))) || (((index._x >= floor(getBoundaries()._size._width / 3) + 3)) && (index._x <= floor(getBoundaries()._size._width / 2)))))) {setValue(eObstacles, index, 1);}
+        else if ((index._x == floor(getBoundaries()._size._width / 2)) && ( (index._y < floor(getBoundaries()._size._height / 2)) && (index._y >= 0) ) ){setValue(eObstacles, index, 1);} // WAS SETMAXVALUE
         }
 	//updateRasterToMaxValues(eObstacles);
 
@@ -213,7 +218,7 @@ void EvacWorld::createRasters()
 
     for(auto index : getBoundaries())
         {
-        if( ( (index._y > 0) || (index._y < floor(getBoundaries()._size._height / 2)) ) && ((index._x > 0) || (index._x < floor(getBoundaries()._size._width / 2)) )){setMaxValue(eRoomOrCoridor, index, 1);}
+        if( ( (index._y > 0) && (index._y < floor(getBoundaries()._size._height / 2)) ) && ((index._x > 0) && (index._x < floor(getBoundaries()._size._width / 2)) )){setValue(eRoomOrCoridor, index, 1);}
         //else if (getDynamicRasterValue(eDoors).getValue(index) == 1){setMaxValue(eRoomOrCoridor, index, 2}
         else if (getValue(eDoors, index) == 1){setValue(eRoomOrCoridor, index, 2);}// WAS SETMAXVALUE
         }
@@ -244,8 +249,13 @@ void EvacWorld::fillExitList()
 
 //herE WE CREATE A FUNCTION THAT UPDATES EXIT LISTS AND EXIT/REMOVES AGENTS - MOVED TO AGENT.CXX UPDATE STATE
 
-void EvacWorld::UpdateExitValues()
+void EvacWorld::UpdateTempValues()
 {
+    for(auto index : getBoundaries())
+        {
+        setValue(eTempCells, index, 0);
+        }
+    std::cout <<"TEMPCELLS RESET AGAIN"<<std::endl;
 }
 
 void EvacWorld::ResetExits() // RESET EXIT LIST TEMP VALUE BEFORE STARTING THE NEW ROUND OF SELECTING tempNextPos !!!!
@@ -302,8 +312,41 @@ void EvacWorld::ResetExits() // RESET EXIT LIST TEMP VALUE BEFORE STARTING THE N
 // in RESOLVE COMPETITION WE NEED TO CHANGE THE SELECTION SINCE 6 GUYS MIGHT BE WANTING TO JUMP AND RANDOMLY GUYS FROM BACK WILL BE WINNING - ADDING PRIORITY FOR CLOSER AGENTS. 
 // alSO NEED TO TAKE INTO ACCOUNT SOMEHOW PANICKING THAT INVOLVES TAKING OTHER PEOPLE POSITIOS
 
+void EvacWorld::NextPosition() // I BELIEVE THIS SHOULD BE IN WORLD CXX
+{
+    const EvacConfig & evacConfig = (const EvacConfig &)/*getWorld()->*/getConfig();
+
+    for (int i=0; i<evacConfig._numAgents; i++)
+                   {
+                    //TO ITERATE OVER ALL AGENTS
+            std::ostringstream id; 
+            id << "EvacAgent_" << i;
+            // TWO TEST LINES
+//            Engine::World* world = getWorld();
+//            EvacWorld & evacWorld = (EvacWorld &) *world;
+
+        EvacAgent * agent = (EvacAgent *) getAgent(id.str()) ;
+        Engine::Point2D<int> curPos = agent->_tempNextPosition;    
+        if ( (agent->_exited == false) && (/*getWorld()->*/getDynamicRaster(eTempCells).getValue(curPos) == 1) && (curPos._y > 0) && (curPos._y < getBoundaries()._size._height) && (curPos._x > 0) && (curPos._x < getBoundaries()._size._width) && (getDynamicRaster(eObstacles).getValue(curPos) == 0))
+        {
+            
+            /*this->*/agent->_evacDist = /*this->*/agent->_evacDist + sqrt(pow((agent->_tempNextPosition._x - curPos._x),2) + pow((agent->_tempNextPosition._y - curPos._y),2));
+            agent->setPosition(curPos);
+            /*this->*/agent->_evacTime++;
+            /*getWorld()->*/setValue(eChemoTaxiTrails, agent->_tempNextPosition, /*getWorld()->*/getValue(eChemoTaxiTrails, (agent->_tempNextPosition))+1);
+        }
+        //else {continue;}
+        std::cout<<"NextPosition for" << i << "correctly"<<std::endl;
+   }
+
+std::cout<<"NextPosition correctly"<<std::endl;
+}
+
+
 void EvacWorld::ResolveCompetition()
 {
+    std::cout<<"RESOLVE COMP"<<std::endl;
+
     const EvacConfig & evacConfig = (const EvacConfig &)getConfig();
     for(auto index : getBoundaries())
     {
@@ -320,11 +363,10 @@ void EvacWorld::ResolveCompetition()
                    std::ostringstream id; 
                    id << "EvacAgent_" << i;
             // TWO TEST LINES
-            Engine::World* world = getWorld();
-            EvacWorld & evacWorld = (EvacWorld &) *world;
-
-                   EvacAgent & agent = (EvacAgent &) (*world->getAgent(id)) ;
-                   if (agent._tempNextPosition == index){evacTemps.push_front(agent);}
+            //Engine::World* world = getWorld();
+            //EvacWorld & evacWorld = (EvacWorld &) *world;
+               EvacAgent * agent = (EvacAgent *) getAgent(id.str()) ;
+                   if (agent->_tempNextPosition == index){evacTemps.push_front(agent);}
                    }
                EvacAgent *maxAgent = evacTemps.front(); 
                /*for (int i=0; i<evacTemps.size(); i++){ // PREVIOUS WAY
@@ -338,13 +380,13 @@ void EvacWorld::ResolveCompetition()
 
 		//_currGoal = evacConfig.exitconfiglist.front();
 		/*EvacWorld::*/EvacAgentListTemp::const_iterator it10=evacTemps.begin();
-		while(it5!=evacTemps.end())
+		while(it10!=evacTemps.end())
 		{
 			//const Engine::Point2D<int> & ext = *it5;
-                        const EvacWorld::EvacAgent & ext = *it10;
+                        /*EvacWorld::*/EvacAgent *ext = *it10; // CHANGED FROM const EvacWorld::EvacAgent & ext = *it10;
 
-		if ( ext->_speed > maxAgent->_speed ) {maxAgent = ext;}
-                else if ((ext->_speed == maxAgent->_speed) && (ext->_panicked >= maxAgent->_panicked)){maxAgent = ext;}
+		if ( ext->returnSpeed() > maxAgent->returnSpeed() ) {maxAgent = ext;}
+                else if ((ext->returnSpeed() == maxAgent->returnSpeed()) && (ext->_panicked >= maxAgent->_panicked)){maxAgent = ext;}
         	it10++;
         	}
 
@@ -360,9 +402,9 @@ void EvacWorld::ResolveCompetition()
 		/*EvacWorld::*/EvacAgentListTemp::const_iterator it6=evacTemps.begin();
 		while(it6!=evacTemps.end())
 		{
-                        const EvacWorld::EvacAgent & ext = *it6;
+                        EvacAgent *ext = *it6; // BEFORE WAS const EvacWorld::EvacAgent & ext = *it6;
 
-                if ((ext->_speed == maxAgent->_speed) && (ext->_panicked == maxAgent->_panicLevel)){fastestCraziest.push_front(ext);}
+                if ((ext->returnSpeed() == maxAgent->returnSpeed()) && (ext->_panicked == maxAgent->_panicked)){fastestCraziest.push_front(ext);}
         	it6++;
         	}
 
@@ -377,7 +419,7 @@ void EvacWorld::ResolveCompetition()
 		/*EvacWorld::*/EvacAgentListTemp::const_iterator it7=fastestCraziest.begin();
 		while(it7!=fastestCraziest.end())
 		{
-                        const EvacWorld::EvacAgent & ext = *it7;
+                        EvacAgent *ext = *it7; // WAS LIKE const EvacWorld::EvacAgent & ext = *it7;
 
                 if (sqrt(pow((index._x - closest->getPosition()._x),2) + pow((index._y - closest->getPosition()._y),2)) >= sqrt(pow((index._x - ext->getPosition()._x),2) + pow((index._y - ext->getPosition()._y),2))) {closest = ext;}                
         	it7++;
@@ -398,34 +440,37 @@ void EvacWorld::ResolveCompetition()
 		/*EvacWorld::*/EvacAgentListTemp::const_iterator it8=fastestCraziest.begin();
 		while(it8!=fastestCraziest.end())
 		{
-                        const EvacWorld::EvacAgent & ext = *it8;
+                        EvacAgent *ext = *it8; // WAS LIKE THIS const EvacWorld::EvacAgent & ext = *it8;
 
-                if (sqrt(pow((index._x - closest->getPosition()._x),2) + pow((index._y - closest->getPosition()._y),2)) == sqrt(pow((index._x - ext->getPosition()._x),2) + pow((index._y - ext->getPosition()._y),2))) { closestList.push_front(ext);}                
+                if (sqrt(pow((index._x - closest->getPosition()._x),2) + pow((index._y - closest->getPosition()._y),2)) == sqrt(pow((index._x - ext->getPosition()._x),2) + pow((index._y - ext->getPosition()._y),2))) { closestList->push_front(ext);} //closestList.push_front(ext);}                
         	it8++;
         	}
 
 
 
                 int c = Engine::GeneralState::statistics().getUniformDistValue(0,closestList->size()-1);
-		EvacWorld::EvacAgentListTemp::const_iterator it11=fastestCraziest.begin();
-                const EvacWorld::EvacAgent & winner = *(it11 + c);
-                winner->evacDist = winner->evacDist + sqrt(pow((winner->getPosition()._x - index._x),2) + pow((winner->getPosition()._y - index._y),2));
+		/*EvacWorld::*/EvacAgentListTemp::const_iterator it11=fastestCraziest.begin();
+                while (c>0){
+                           it11++;
+                           c--;
+                           }
+                EvacAgent *winner = *it11; ///*const EvacWorld::*/EvacAgent & winner = *it11;
+                winner->_evacDist = winner->_evacDist + sqrt(pow((winner->getPosition()._x - index._x),2) + pow((winner->getPosition()._y - index._y),2));
                 winner->setPosition(index);                
-                setValue(eChemoTaxiTrails, index, getValue(eChemoTaxiTrails, index)+1));
-                winner->evacTime++;
-                fastestCraziest.erase(winner);
+                setValue(eChemoTaxiTrails, index, getValue(eChemoTaxiTrails, index)+1);
+                winner->_evacTime++;
+                //fastestCraziest.erase(winner); - DO NOT NEED TO ERASE BECAUSE IT IS SKIPPED LATER ON ?
 
 
 
 		/*EvacWorld::*/EvacAgentListTemp::const_iterator it9=fastestCraziest.begin();
 		while(it9!=fastestCraziest.end())
 		{
-                        const EvacWorld::EvacAgent & ext = *it9;
-
-                    if (ext->id != winner->id) 
+                        EvacAgent *ext = *it9;//const EvacWorld::EvacAgent & ext = *it9;
+                    if (ext->getId() != winner->getId() ) //->id
                     { 
-                         ext->notMoved = ext->notMoved + 1;
-                         ext->evacTime++;
+                         ext->_notMoved = ext->_notMoved + 1;
+                         ext->_evacTime++;
                     }                
         	it9++;
         	}
@@ -450,9 +495,11 @@ void EvacWorld::ResolveCompetition()
 
 void EvacWorld::stepEnvironment()
 {
-        ResolveCompetition();
-        UpdateExitValues();
+        NextPosition();
+        //ResolveCompetition();
+        UpdateTempValues();
         ResetExits();
+        std::cout<<"STEP ENV TEST"<<std::endl;
 
 }
 
