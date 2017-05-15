@@ -17,3 +17,4 @@ Main - ALMOST DONE
 Inside the ROOM they cannot set their currgoals... for some reasons
 tempnextpos not correctly working (sometimes outting tempnextcell to obstacles)
 nextpos not executing correctly since agents cannot exit
+when people in competition loose, their tempnextposition becomes the position where they are standing for the next round -> BECAUSE EXIT STAYS OCCUPIED,  but why????

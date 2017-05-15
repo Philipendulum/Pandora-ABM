@@ -3,7 +3,7 @@
 	<!-- Output Directory -->
 	<output resultsFile="./data/evacuation.h5" logsDir="./logs"/>
 	<!-- Number of Steps and Raster Sizes -->
-	<numSteps value="10" serializeResolution="1"/>
+	<numSteps value="30" serializeResolution="1"/>
 	<size width="100" height="100"/>
 	<!-- Raster specifics -->
 	<exits>
@@ -22,7 +22,7 @@
 	<environment floorNumber = "2"/>
 
 	<!-- Agents Parameters  -->
-	<agents num="10" childPercentage="15" elderlyPercentage="10" malePercentage="59" notMovedPanicTreshold="20"/>
+	<agents num="30" childPercentage="15" elderlyPercentage="10" malePercentage="59" notMovedPanicTreshold="20"/>
 
 </config>
 

@@ -113,7 +113,7 @@ void EvacAgent::SetTempNextPosition()
                 _tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
                 _tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
                  // HOW TO FORBID THEM TO GO THROUGH WALLS?
-                while ((_tempNextPosition._x < 0) || (_tempNextPosition._x > getWorld()->getBoundaries()._size._width-1) || (_tempNextPosition._y < 0) || (_tempNextPosition._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, _tempNextPosition) == 1) || (getWorld()->getValue(eRoomOrCoridor, _tempNextPosition) != 1))
+                while ((_tempNextPosition._x < 0) || (_tempNextPosition._x > getWorld()->getBoundaries()._size._width-1) || (_tempNextPosition._y < 0) || (_tempNextPosition._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, _tempNextPosition) == 1) || (getWorld()->getValue(eRoomOrCoridor, _tempNextPosition) != 1) || (getWorld()->getValue(eOccupied, _tempNextPosition) == 1))
                     {
                     _tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
                     _tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
@@ -134,7 +134,7 @@ void EvacAgent::SetTempNextPosition()
                     if ( (step._x<0) || (step._x > getWorld()->getBoundaries()._size._width-1 ) || (step._y<0) || (step._y > getWorld()->getBoundaries()._size._height-1 )){continue;} //PROTECT FROM OUT OF BOUNDARIES
                     else if (sqrt(pow((_currGoal._x - step._x),2) + pow((_currGoal._y - step._y),2)) <= sqrt(pow((_currGoal._x - _tempNextPosition._x),2) + pow((_currGoal._y - _tempNextPosition._y),2)) )
                         {
-                        if ((step._x < 0) || (step._x > getWorld()->getBoundaries()._size._width-1) || (step._y < 0) || (step._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, step) == 1) || (getWorld()->getValue(eRoomOrCoridor, step) == 0) ) {continue;} // here we define that the agent cant jump to the corridor. 1 is room and 2 is door         
+                        if ((step._x < 0) || (step._x > getWorld()->getBoundaries()._size._width-1) || (step._y < 0) || (step._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, step) == 1) || (getWorld()->getValue(eRoomOrCoridor, step) == 0) || (getWorld()->getValue(eOccupied, step) == 1) ) {continue;} // here we define that the agent cant jump to the corridor. 1 is room and 2 is door         
                         // WE ALSO NEED TO DEFINE SOMEHOW THAT THE AGENTS DO NOT GO THROUGH CORNERS OR TO OTHER ROOMS
                         _tempNextPosition = step;
                         }
@@ -163,7 +163,7 @@ void EvacAgent::SetTempNextPosition()
              _tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
              _tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
              // HOW TO FORBID THEM TO GO THROUGH WALLS?
-             while ((_tempNextPosition._x < 0) || (_tempNextPosition._x > getWorld()->getBoundaries()._size._width-1) || (_tempNextPosition._y < 0) || (_tempNextPosition._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, _tempNextPosition) == 1) || (getWorld()->getValue(eRoomOrCoridor, _tempNextPosition) != 0) )
+             while ((_tempNextPosition._x < 0) || (_tempNextPosition._x > getWorld()->getBoundaries()._size._width-1) || (_tempNextPosition._y < 0) || (_tempNextPosition._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, _tempNextPosition) == 1) || (getWorld()->getValue(eRoomOrCoridor, _tempNextPosition) != 0) || (getWorld()->getValue(eOccupied, _tempNextPosition) == 1))
                  {
                  _tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
                  _tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
@@ -185,7 +185,7 @@ void EvacAgent::SetTempNextPosition()
                     else if (sqrt(pow((_currGoal._x - step._x),2) + pow((_currGoal._y - step._y),2)) <= sqrt(pow((_currGoal._x - _tempNextPosition._x),2) + pow((_currGoal._y - _tempNextPosition._y),2)) )
                         {
                         if ((step._x < 0) || (step._x > getWorld()->getBoundaries()._size._width-1) || (step._y < 0) || (step._y > getWorld()->getBoundaries()._size._height-1)) {continue;}
-                        else if ((getWorld()->getValue(eObstacles, step) != 1) && (getWorld()->getValue(eRoomOrCoridor, step) == 0)) {_tempNextPosition = step;}
+                        else if ((getWorld()->getValue(eObstacles, step) != 1) && (getWorld()->getValue(eRoomOrCoridor, step) == 0) && (getWorld()->getValue(eOccupied, step) == 0)) {_tempNextPosition = step;}
                         }
                     }
                 }
@@ -237,7 +237,7 @@ void EvacAgent::SetTempNextPosition()
                     if ( (step._x<0) || (step._x > getWorld()->getBoundaries()._size._width-1 ) || (step._y<0) || (step._y > getWorld()->getBoundaries()._size._height-1 )){continue;} //protect from ooboundariies
                     else if (sqrt(pow((_currGoal._x - step._x),2) + pow((_currGoal._y - step._y),2)) <= sqrt(pow((_currGoal._x - _tempNextPosition._x),2) + pow((_currGoal._y - _tempNextPosition._y),2)) )
                         {
-                        if ((step._x < 0) || (step._x > getWorld()->getBoundaries()._size._width-1) || (step._y < 0) || (step._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, step) == 1) || (getWorld()->getValue(eRoomOrCoridor, step) != 0) ) {continue;}
+                        if ((step._x < 0) || (step._x > getWorld()->getBoundaries()._size._width-1) || (step._y < 0) || (step._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, step) == 1) || (getWorld()->getValue(eRoomOrCoridor, step) != 0) || (getWorld()->getValue(eOccupied, step) == 1) ) {continue;}
                         _tempNextPosition = step;
                         }
                     }
@@ -267,7 +267,7 @@ void EvacAgent::SetTempNextPosition()
         _tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
         _tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
         // HOW TO FORBID THEM TO GO THROUGH WALLS?
-        while ((_tempNextPosition._x < 0) || (_tempNextPosition._x > getWorld()->getBoundaries()._size._width-1) || (_tempNextPosition._y < 0) || (_tempNextPosition._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, _tempNextPosition) == 1) || (getWorld()->getValue(eRoomOrCoridor, _tempNextPosition) != 0) )
+        while ((_tempNextPosition._x < 0) || (_tempNextPosition._x > getWorld()->getBoundaries()._size._width-1) || (_tempNextPosition._y < 0) || (_tempNextPosition._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, _tempNextPosition) == 1) || (getWorld()->getValue(eRoomOrCoridor, _tempNextPosition) != 0) || (getWorld()->getValue(eOccupied, _tempNextPosition) == 1))
             {
             _tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
             _tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
@@ -313,7 +313,7 @@ void EvacAgent::SetTempNextPosition()
                     if ( (step._x<0) || (step._x > getWorld()->getBoundaries()._size._width-1 ) || (step._y<0) || (step._y > getWorld()->getBoundaries()._size._height-1 )){continue;} //protet against OOBound
                     else if (sqrt(pow((_currGoal._x - step._x),2) + pow((_currGoal._y - step._y),2)) <= sqrt(pow((_currGoal._x - _tempNextPosition._x),2) + pow((_currGoal._y - _tempNextPosition._y),2)) )
                         {
-                        if ((step._x < 0) || (step._x > getWorld()->getBoundaries()._size._width-1) || (step._y < 0) || (step._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, step) == 1) || (getWorld()->getValue(eRoomOrCoridor, step) != 0) ) {continue;}
+                        if ((step._x < 0) || (step._x > getWorld()->getBoundaries()._size._width-1) || (step._y < 0) || (step._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, step) == 1) || (getWorld()->getValue(eRoomOrCoridor, step) != 0) || (getWorld()->getValue(eOccupied, step) == 1) ) {continue;}
                         _tempNextPosition = step;
                         }
                     }
@@ -341,6 +341,12 @@ std::cout<<"UPDATE STATE BEGINS"<<std::endl;
         {
         _exited = true;
         getWorld()->removeAgent(this);
+        // EVERYTHING BELOW IS NEW ADDITION 15.05
+	    Engine::World* world  = getWorld();
+	    EvacWorld & evacWorld = (EvacWorld&) *world;
+	    auto al = evacWorld.returnAllList();
+            evacWorld.removeRemovedAgent(this);
+        //al.erase(this);
         }
     
     else if(_panicked >= 1) // panic increases with more not moving

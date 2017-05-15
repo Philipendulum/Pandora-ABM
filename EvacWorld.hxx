@@ -19,6 +19,9 @@ enum Rasters
 
         // temporary count of agents wanting to move to this cell. 
         eTempCells,
+
+        //occupied cells at current step in time
+        eOccupied,
         
         // stairs
         eStairs,
@@ -58,6 +61,7 @@ class EvacWorld: public Engine::World
 	void stepEnvironment();
         void ResolveCompetition();
         void ResetExits();
+        void ResetOccupied();
         void UpdateTempValues();
 
  
@@ -66,6 +70,14 @@ public:
 	EvacWorld( EvacConfig * config, Engine::Scheduler * scheduler = 0);
 	virtual ~EvacWorld();
 // FROM ABOVE THESE 3 LINES HERE
+
+        typedef std::list<EvacAgent*> AL;
+        AL al;
+        AL returnAllList() const{return al;}
+        AL removeRemovedAgent (EvacAgent* agent) 
+            {al.remove(agent);
+             return al;
+            }
 
         ExitsList returnList() const{return _exits;}
 };
