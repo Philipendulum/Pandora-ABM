@@ -106,6 +106,27 @@ void EvacAgent::SetTempNextPosition()
                         }
                      i++;
                      }
+//NEW PIECE OF CODE
+
+            //Engine::Point2D<int> step, currentPos;
+            currentPos = getPosition();
+            _tempNextPosition = currentPos; //_currGoal; //added 15.05.2017, was _tempNextPosition = currentPos;
+            //int i;
+            for (step._x = currentPos._x - _speed; step._x <= currentPos._x + _speed; step._x++)
+                {
+                for (step._y = currentPos._y - _speed; step._y <= currentPos._y + _speed; step._y++)
+                    {
+                    if ( (step._x<0) || (step._x > getWorld()->getBoundaries()._size._width-1 ) || (step._y<0) || (step._y > getWorld()->getBoundaries()._size._height-1 )){continue;} //PROTECT FROM OUT OF BOUNDARIES
+                    else if (sqrt(pow((_currGoal._x - step._x),2) + pow((_currGoal._y - step._y),2)) <= sqrt(pow((_currGoal._x - _tempNextPosition._x),2) + pow((_currGoal._y - _tempNextPosition._y),2)) )
+                        {
+                        if ((step._x < 0) || (step._x > getWorld()->getBoundaries()._size._width-1) || (step._y < 0) || (step._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, step) == 1) || (getWorld()->getValue(eRoomOrCoridor, step) == 0) || (getWorld()->getValue(eOccupied, step) == 1) ) {continue;} // here we define that the agent cant jump to the corridor. 1 is room and 2 is door         
+                        // WE ALSO NEED TO DEFINE SOMEHOW THAT THE AGENTS DO NOT GO THROUGH CORNERS OR TO OTHER ROOMS
+                        _tempNextPosition = step;
+                        }
+                    }
+                }
+            getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition))+1);
+
                   }
             else if((seedoors == 0) && (seesigns == 0))// RANDOM WALK IF DOESNT SEE SIGN OR DOOR
                 {

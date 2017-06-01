@@ -18,3 +18,39 @@ Inside the ROOM they cannot set their currgoals... for some reasons
 tempnextpos not correctly working (sometimes outting tempnextcell to obstacles)
 nextpos not executing correctly since agents cannot exit
 when people in competition loose, their tempnextposition becomes the position where they are standing for the next round -> BECAUSE EXIT STAYS OCCUPIED,  but why????
+
+Goals 
+- implement something with eChemoTaxiTrails for people with knowledge 0 
+- come up with the way panicked attribute changes
+- what physical attributes affect the bottleneck
+- pathfinding: is it decent? Does it represent reality?
+- how to make them choose the other free position of the door or exit?
+- maybe make them communicate so that old guys who are ost can talk to running young guys with knowledge 1, then old guy knowledge equal 1 and they safely evacuate
+
+----------------------------------------------------------------------
+WALLS INSIDE - CHECK INSIDE IF THE PATH IS FREE FOR THE WHOLE ROWS.
+To numerate raster RoomOrCorridor -> select random point from the space and explore all cells around it that are until a door or wall(object)
+make them remember where they were and discard these rooms. 
+
+
+
+Problems:
+Libraries, methods, ways to cast the world, create agent lists
+- make them stay in the same corridor, or room, not jump somewhere - solved using a raster eRoomOrCorridor
+- making the agents move : pathfinding algorithm difficult to implement. Fixed positions on a grid make it virually impossible to have people of different sizes and let anyone squeeze through
+- creating list of agents currently on rasters
+- door size cannot be adjusted along with any sizes and intermediate positions
+- general c++ lack of any kind of experience
+- decision making process for agents competing for same cell and general next movement decision - was tough, but with help of multiple rasters solvable
+- no idea how to allow import of drawings 
+- cannot automate config file ro have multiple (30 + ) exits or signs
+- problem might arise with multiple rooms which are separated by walls that are less than 3x grid size. agents will be able to jump through walls - add a numeration for each room?
+but then rooms might be interconnected and some rooms will be only connected to other rooms. Implementing that logic is still a mistery for me since now I can only simulate rooms that
+have an exit or two to the corridor where the exit signs are located. 
+- actual path of evacuation is now predefined as if the agents ith knowlegde know where to go. In reality we move until the corner and then look around to decide what to do. 
+current currGoals are only doors and exits.
+- avoiding walls inside the room will be problematic since agents will kind of jump "through" them
+
+
+
+
