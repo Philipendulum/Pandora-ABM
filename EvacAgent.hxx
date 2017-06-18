@@ -12,19 +12,6 @@ namespace Evacuation
 
 
     class EvacConfig;
-    // TEMPORARILY DISABLE ENUMS
-    /*enum Gender
-      {
-      Male;
-      Female;
-      };
-      enum Age
-      {
-      Child;
-      Adult;
-      Elderly;
-      };*/
-
     class EvacAgent : public Engine::Agent
     {
 	int _resources; 
@@ -36,8 +23,6 @@ namespace Evacuation
         int _time;
 	int panictime; // time the agent was in panic above **SELECT THRESHOLD**
 	bool _isOnStairs;
-	//Evacuation::Gender gender;
-	//Evacuation::Age age;
 	int _age;
 	char _gender;
 
@@ -47,11 +32,11 @@ namespace Evacuation
         bool _exited;
 	int returnSpeed(){return _speed;}
 	int _panicked; // what high panic leads to ??? FIGURE OUT !!!!!!!! It leads to HARDCORE FIGHT
-	int _notMoved;// how many timesteps the agent has not moved at all 
-
-	Engine::Point2D<int> _currGoal; // current goal , maybe door or exit
+	int _notMoved;// how many timesteps the agent has not moved, it goes to 0 when panic increases by 1 
+        int _notMovedTotal; // TOTAL NOT MOVED FOR SIMULATION. is never reset to 0
+	typedef std::list<Engine::Point2D<int> > currGoalsList; 
+	currGoalsList _currGoal; // current goal , maybe door or exit
 	Engine::Point2D<int> _tempNextPosition; // temporary next position, before competition for free cell has determined who moves. 
-	//void NextPosition();
 	void SetTempNextPosition();
 	int _knowledge;
 	int _evacTime;
@@ -59,27 +44,20 @@ namespace Evacuation
 
           
 
-	// todo remove environment from here
-	EvacAgent( const std::string & id, double speed, int floor,  char gender, int age, int vision, bool isOnStairs, bool exited, int panicked, Engine::Point2D<int>  currGoal, /*Engine::Point2D<int> tempNextPosition,*/ int evacDist, int evacTime, int notMoved); //this will be the constructer we will use in createAgent;
-	//
-	//void setExit( const Engine::Point2D<int> & exit ); // not sure what this is
+	EvacAgent( const std::string & id, double speed, int floor,  char gender, int age, int vision, bool isOnStairs, bool exited, int panicked, int evacDist, int evacTime, int notMoved, int notMovedTotal); //this will be the constructer we will use in createAgent
+ /*Engine::Point2D<int> tempNextPosition,*/
 
 	virtual ~EvacAgent();
 
+	typedef std::list<Engine::Point2D<int> > ExitsList;       
 
-	//ADDING LINE TO TRY TO FIX AN ERROR
-	typedef std::list<Engine::Point2D<int> > ExitsList;
-
-	//std::list<Engine::Point2D<int> > operator[](int index){return std::list<Engine::Point2D<int> >[index];}
-
-	//void selectActions();
 	void updateState();
 	void registerAttributes();
 	void serialize();
 
 
-
 	std::string agentCharac();
+
 
 	////////////////////////////////////////////////
 	// This code has been automatically generated //
@@ -92,8 +70,6 @@ namespace Evacuation
 	////////////////////////////////////////////////
 	//////// End of generated code /////////////////
 	////////////////////////////////////////////////
-
-
 
     };
 

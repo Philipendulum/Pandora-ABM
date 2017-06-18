@@ -13,7 +13,8 @@ namespace Evacuation
 {
 
 
-    EvacAgent::EvacAgent( const std::string & id, double speed, int floor,  char gender, int age, int vision, bool isOnStairs, bool exited, int panicked, Engine::Point2D<int> currGoal,/* Engine::Point2D<int> tempNextPosition,*/ int evacDist, int evacTime, int notMoved) : Agent(id)
+    EvacAgent::EvacAgent( const std::string & id, double speed, int floor,  char gender, int age, int vision, bool isOnStairs, bool exited, int panicked, int evacDist, int evacTime, int notMoved, int notMovedTotal) : Agent(id)
+/*Engine::Point2D<int> currGoal(/,/* Engine::Point2D<int> tempNextPosition,*/ 
     {
 	_floor = floor; 
         _vision = vision;
@@ -23,13 +24,15 @@ namespace Evacuation
         _isOnStairs = isOnStairs;
         _exited = exited;
         _panicked = panicked;
-        _currGoal._x = currGoal._x;
-        _currGoal._y = currGoal._y;
+        //_currGoal.push_front(currGoal);
+        //_currGoal._x = currGoal._x;
+        //_currGoal._y = currGoal._y;
         //_tempNextPosition._x = tempNextPosition._x;
         //_tempNextPosition._y = tempNextPosition._y;
         _evacDist = evacDist;
         _evacTime = evacTime;
         _notMoved = notMoved;
+        _notMovedTotal = notMovedTotal;
 	//it maybe usefull here to throw errors if, for ex: age<0, gender != {"F","M"} ....
 
     }
@@ -39,31 +42,16 @@ EvacAgent::~EvacAgent()
 {
 }
 
-// SET TEMP NEXT POSITION
 void EvacAgent::SetTempNextPosition()
 {
     const EvacConfig & evacConfig = (const EvacConfig &)getWorld()->getConfig();
-    
 
-        
-    if (getWorld()->getValue(eRoomOrCoridor, getPosition())==1) // IN A ROOM
+    if ((getWorld()->getValue(eRoomOrCoridor, getPosition())!=0) && (getWorld()->getValue(eStairs, getPosition())==0) ) // IN ONE OF THE FLOOR ROOMS
         {
-        
-        // WE NEED TO DEFINE HOW TO DEAL WITH EXITED PEOPLE ALREADY AND GO FROM LOCATED TO EXIT TO REMOVED OR SMT - Seems done?>!?!!?!?
-        
-        // WE NEED TO ADD eTempCells to the movement when it has been decided!!!!!!!! - OK ?!?!
-        
-        // WE MAYBE NEED TO ADD RANDOM MOVEMENTS IF AGENT PANICKED 
-        // ALSO WE MAYBE NEED TO CHANGE PANIC TO SOME LEVEL IF FOR A NUMBER OF STEPS THE AGENT HAS KNOWLEDGE 0 
-        
-        //WE NEED TO DECIDE WHAT PANIC LEVEL DOES TO A PERSON IN A SITUATION. HOW DOES IT AFFECT HIS ACTIONS????? How do we model trampling?
-        //we need to add attributes to count metrics = time of evacuation, total distance travelled. - ADD PARAMETERS FOR EVERY AGENT IN AGENT.CXX
-        //let it be agent.this->_evacTime and agent.this->_evacDist - done ?!?!?!?!
-        
-        //WHAT HAPPENS IF 0 CELLS AROUND ARE AVAILABLE ?!?!?! Model staying in same place, and maybe agressive behaviour. - Staying in same place seems OK - tempNext is position, cell occupied. Aggressive behavopir - NEED TO COME UP WITH IDEA
-        
+        std::cout << "In one of the floor rooms" << std::endl;
         if (_knowledge == 0)
             {
+             std::cout << "if knowledge == 0" << std::endl; 
             int seesigns = 0;
             int seedoors = 0;
             Engine::Point2D<int> index, currentPos;
@@ -73,278 +61,885 @@ void EvacAgent::SetTempNextPosition()
                 {
                 for (index._y = currentPos._y - _vision; index._y <= currentPos._y + _vision; index._y++)
                     {
-                    if ( (index._x<0) || (index._x > getWorld()->getBoundaries()._size._width-1 ) || (index._y<0) || (index._y > getWorld()->getBoundaries()._size._height-1 )){continue;}
-                    else if ((getWorld()->getValue(eSigns, index) == 1) && (getWorld()->getValue(eRoomOrCoridor, index) == 1)) {seesigns += 1;}
-                    else if (getWorld()->getValue(eDoors, index) == 1) {seedoors +=1;}
+                    if ( (index._x<0) || (index._x > getWorld()->getBoundaries()._size._width-1 ) || (index._y<0) || (index._y > getWorld()->getBoundaries()._size._height-1 ) || (getWorld()->getValue(eFloor, index) != getWorld()->getValue(eFloor, currentPos))){continue;}
+                    else if ( (getWorld()->getValue(eSigns, index) == 1) && (getWorld()->getValue(eRoomOrCoridor, index) == getWorld()->getValue(eRoomOrCoridor, currentPos)) ) {seesigns += 1;}
+                    else if (getWorld()->getValue(eDoors, index) == 1) 
+                        {
+                            std::cout << "if (getWorld()->getValue(eDoorValue, index) == 1)" <<std::endl;
+                        if (getWorld()->getValue(eDoorValue, index) == 1)
+                            {
+                            if (getWorld()->getValue(eDoorDir, index) == 4) //L to R
+                                {
+                                Engine::Point2D<int> check;
+                                check._x = index._x - 1;
+                                check._y = index._y;
+                                if (getWorld()->getValue(eRoomOrCoridor, currentPos) == getWorld()->getValue(eRoomOrCoridor, check)) {seedoors +=1;}
+                                }
+                            else if (getWorld()->getValue(eDoorDir, index) == 1) //D to U
+                                {
+                                Engine::Point2D<int> check;
+                                check._x = index._x;
+                                check._y = index._y + 1;
+                                if (getWorld()->getValue(eRoomOrCoridor, currentPos) == getWorld()->getValue(eRoomOrCoridor, check)) {seedoors +=1;}
+                                }
+                            else if (getWorld()->getValue(eDoorDir, index) == 2) // R to L
+                                {
+                                Engine::Point2D<int> check;
+                                check._x = index._x + 1;
+                                check._y = index._y;
+                                if (getWorld()->getValue(eRoomOrCoridor, currentPos) == getWorld()->getValue(eRoomOrCoridor, check)) {seedoors +=1;}
+                                }
+                            else if (getWorld()->getValue(eDoorDir, index) == 3) // U TO D
+                                {
+                                Engine::Point2D<int> check;
+                                check._x = index._x;
+                                check._y = index._y - 1;
+                                if (getWorld()->getValue(eRoomOrCoridor, currentPos) == getWorld()->getValue(eRoomOrCoridor, check)) {seedoors +=1;}
+                                }
+                            }
+                        }
                     }
                 }
-            if (((seedoors > 0) || (seesigns > 0)) && (this->_knowledge == 0)) // 15.05.2017 WAS if ((seedoors > 0) || (seesigns > 0))
-                {
-                std::cout << "SEEDORS OR SEESIGNS MORE THAN 0" <<std::endl;
-                 int doorfound = 0; // when door is located, it becomes one and is recorded as the temp goal of the agent
-                 int i = 1;
-                 Engine::Point2D<int> radius, step;
-                 while ((doorfound == 0) && (this->_knowledge == 0))
-                     {
-                            std::cout << "!!!!!!!!!!!!!!!!!!!!!! i EQUAL" << i <<std::endl;
-                     //int count = 0;
-                     for (radius._x = currentPos._x - i; radius._x <= currentPos._x + i; radius._x++)
+
+            if (((seedoors > 0) || (seesigns > 0)) && (this->_knowledge == 0)) 
+                {    
+                std::cout << "SEEDORS OR SEESIGNS MORE THAN 0 one" <<std::endl;
+                int doorfound = 0; // when door is located, it becomes one and is recorded as the temp goal of the agent
+                int i = 1;
+                Engine::Point2D<int> radius, step;
+                while ((doorfound == 0) && (this->_knowledge == 0))
+                    {
+                    std::cout << "!!!!!!!!!!!!!!!!!!!!!! i EQUAL FIRST" << i << "and position " << currentPos <<std::endl;
+                    for (radius._x = currentPos._x - i; radius._x <= currentPos._x + i; radius._x++)
                         {
                         for (radius._y = currentPos._y - i; radius._y <= currentPos._y + i; radius._y++)
                             {
-
-                            if ( (radius._x<0) || (radius._x > getWorld()->getBoundaries()._size._width-1 ) || (radius._y<0) || (radius._y > getWorld()->getBoundaries()._size._height-1 )){continue;}
+                            if ( (radius._x<0) || (radius._x > getWorld()->getBoundaries()._size._width-1 ) || (radius._y<0) || (radius._y > getWorld()->getBoundaries()._size._height-1 ) || (getWorld()->getValue(eFloor, radius) != getWorld()->getValue(eFloor, currentPos)))
+                                {
+                                continue;}
                             else if (getWorld()->getValue(eDoors, radius) == 1)
                                 {
-                                this->_currGoal = radius;
-                                doorfound += 1;
-                                this->_knowledge = 1;
-                                std::cout << "!!!!!!!!!!!!!!!!!!!!!! DOORFOUND 1 CURRGOAL SHOULD BE UPDATED" <<std::endl;
-                                //break;
+                                if (getWorld()->getValue(eDoorValue, radius) == 1)
+                                    {
+                                    if (getWorld()->getValue(eDoorDir, radius) == 4) //L to R
+                                        {
+                                        Engine::Point2D<int> check;
+                                        check._x = radius._x - 1;
+                                        check._y = radius._y;
+                                        if (getWorld()->getValue(eRoomOrCoridor, currentPos) == getWorld()->getValue(eRoomOrCoridor, check)) 
+                                            {
+                                            this->_currGoal.clear();
+                                            this->_currGoal.push_front(radius);
+                                            int j;
+                                            for (j = radius._y - evacConfig.maxDoorWidth; j <= radius._y + evacConfig.maxDoorWidth; j++)
+                                                {
+                                                Engine::Point2D<int> point;
+                                                point._x = radius._x;
+                                                point._y = j;
+                                                if ((j!= radius._y) && (getWorld()->getValue(eDoors, point) == 1) && (getWorld()->getValue(eDoorDir, radius) == getWorld()->getValue(eDoorDir, point)) && (getWorld()->getValue(eDoorValue, radius) == getWorld()->getValue(eDoorValue, point)) ) {this->_currGoal.push_front(point);} 
+                                                }
+                                            doorfound += 1;
+                                            this->_knowledge = 1;
+                                            std::cout << "DOORFOUND 1 CURRGOAL SHOULD BE UPDATED" <<std::endl;                                             
+                                            }
+                                        }
+                                    else if (getWorld()->getValue(eDoorDir, radius) == 1) //D to U
+                                        {
+                                        Engine::Point2D<int> check;
+                                        check._x = radius._x;
+                                        check._y = radius._y + 1;
+                                        if (getWorld()->getValue(eRoomOrCoridor, currentPos) == getWorld()->getValue(eRoomOrCoridor, check))
+                                            {
+                                            this->_currGoal.clear();
+                                            this->_currGoal.push_front(radius);
+                                            int j;
+                                            for (j = radius._x - evacConfig.maxDoorWidth; j <= radius._x + evacConfig.maxDoorWidth; j++)
+                                                {
+                                                Engine::Point2D<int> point;
+                                                point._x = j;
+                                                point._y = radius._y;
+                                                if ((j!= radius._x) && (getWorld()->getValue(eDoors, point) == 1) && (getWorld()->getValue(eDoorDir, radius) == getWorld()->getValue(eDoorDir, point)) && (getWorld()->getValue(eDoorValue, radius) == getWorld()->getValue(eDoorValue, point)) ) {this->_currGoal.push_front(point);} 
+                                                }
+                                            doorfound += 1;
+                                            this->_knowledge = 1;
+                                            std::cout << "DOORFOUND 1 CURRGOAL SHOULD BE UPDATED" <<std::endl;                                             
+                                            }
+                                        }
+                                    else if (getWorld()->getValue(eDoorDir, radius) == 2) // R to L
+                                        {
+                                        Engine::Point2D<int> check;
+                                        check._x = radius._x + 1;
+                                        check._y = radius._y;
+                                        if (getWorld()->getValue(eRoomOrCoridor, currentPos) == getWorld()->getValue(eRoomOrCoridor, check))
+                                            {
+                                            this->_currGoal.clear();
+                                            this->_currGoal.push_front(radius);
+                                            int j;
+                                            for (j = radius._y - evacConfig.maxDoorWidth; j <= radius._y + evacConfig.maxDoorWidth; j++)
+                                                {
+                                                Engine::Point2D<int> point;
+                                                point._x = radius._x;
+                                                point._y = j;
+                                                if ((j!= radius._y) && (getWorld()->getValue(eDoors, point) == 1) && (getWorld()->getValue(eDoorDir, radius) == getWorld()->getValue(eDoorDir, point)) && (getWorld()->getValue(eDoorValue, radius) == getWorld()->getValue(eDoorValue, point)) ) {this->_currGoal.push_front(point);} 
+                                                }
+                                            doorfound += 1;
+                                            this->_knowledge = 1;
+                                            std::cout << "DOORFOUND 1 CURRGOAL SHOULD BE UPDATED" <<std::endl;                                             
+                                            }
+                                        }
+                                    else if (getWorld()->getValue(eDoorDir, radius) == 3) // U TO D
+                                        {
+                                        Engine::Point2D<int> check;
+                                        check._x = radius._x;
+                                        check._y = radius._y - 1;
+                                        if (getWorld()->getValue(eRoomOrCoridor, currentPos) == getWorld()->getValue(eRoomOrCoridor, check))
+                                            {
+                                            this->_currGoal.clear();
+                                            this->_currGoal.push_front(radius);
+                                            int j;
+                                            for (j = radius._x - evacConfig.maxDoorWidth; j <= radius._x + evacConfig.maxDoorWidth; j++)
+                                                {
+                                                Engine::Point2D<int> point;
+                                                point._x = j;
+                                                point._y = radius._y;
+                                                if ((j!= radius._x) && (getWorld()->getValue(eDoors, point) == 1) && (getWorld()->getValue(eDoorDir, radius) == getWorld()->getValue(eDoorDir, point)) && (getWorld()->getValue(eDoorValue, radius) == getWorld()->getValue(eDoorValue, point)) ) {this->_currGoal.push_front(point);} 
+                                                }
+                                            doorfound += 1;
+                                            this->_knowledge = 1;
+                                            std::cout << "DOORFOUND 1 CURRGOAL SHOULD BE UPDATED" <<std::endl;                                             
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
                      i++;
                      }
-//NEW PIECE OF CODE
+                 i = 1; // NEW LINE 
+                 currentPos = getPosition();
+                 _tempNextPosition = currentPos;
+                 float distance = sqrt(pow((_currGoal.front()._x - currentPos._x),2) + pow((_currGoal.front()._y - currentPos._y),2));
+               
 
-            //Engine::Point2D<int> step, currentPos;
-            currentPos = getPosition();
-            _tempNextPosition = currentPos; //_currGoal; //added 15.05.2017, was _tempNextPosition = currentPos;
-            //int i;
-            for (step._x = currentPos._x - _speed; step._x <= currentPos._x + _speed; step._x++)
-                {
-                for (step._y = currentPos._y - _speed; step._y <= currentPos._y + _speed; step._y++)
-                    {
-                    if ( (step._x<0) || (step._x > getWorld()->getBoundaries()._size._width-1 ) || (step._y<0) || (step._y > getWorld()->getBoundaries()._size._height-1 )){continue;} //PROTECT FROM OUT OF BOUNDARIES
-                    else if (sqrt(pow((_currGoal._x - step._x),2) + pow((_currGoal._y - step._y),2)) <= sqrt(pow((_currGoal._x - _tempNextPosition._x),2) + pow((_currGoal._y - _tempNextPosition._y),2)) )
-                        {
-                        if ((step._x < 0) || (step._x > getWorld()->getBoundaries()._size._width-1) || (step._y < 0) || (step._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, step) == 1) || (getWorld()->getValue(eRoomOrCoridor, step) == 0) || (getWorld()->getValue(eOccupied, step) == 1) ) {continue;} // here we define that the agent cant jump to the corridor. 1 is room and 2 is door         
+                 // ITERATOR OVER CURRGOAL
+                 currGoalsList::const_iterator itcurr=_currGoal.begin();
+            
+	         while(itcurr!=_currGoal.end())
+	             {
+		     const Engine::Point2D<int> & ext = *itcurr;
+
+                     for (step._x = currentPos._x - _speed; step._x <= currentPos._x + _speed; step._x++)
+                         {
+                         for (step._y = currentPos._y - _speed; step._y <= currentPos._y + _speed; step._y++)
+                             {
+                             if ( (step._x<0) || (step._x > getWorld()->getBoundaries()._size._width-1 ) || (step._y<0) || (step._y > getWorld()->getBoundaries()._size._height-1 ) || (getWorld()->getValue(eFloor, step) != getWorld()->getValue(eFloor, currentPos))){continue;} //PROTECT FROM OUT OF BOUNDARIES
+                             else if (sqrt(pow((ext._x - step._x),2) + pow((ext._y - step._y),2)) < distance )
+                                 {
+                                 if ( (getWorld()->getValue(eObstacles, step) == 1) || ( (getWorld()->getValue(eRoomOrCoridor, step) != getWorld()->getValue(eRoomOrCoridor, getPosition()) ) &&  (getWorld()->getValue(eRoomOrCoridor, step) != 0) ) || (getWorld()->getValue(eOccupied, step) == 1) ) {continue;} // here we define that the agent cant jump to the Coridor. 1 is room and 2 is door         
                         // WE ALSO NEED TO DEFINE SOMEHOW THAT THE AGENTS DO NOT GO THROUGH CORNERS OR TO OTHER ROOMS
-                        _tempNextPosition = step;
+                                 _tempNextPosition = step;
+                                 distance = sqrt(pow((ext._x - step._x),2) + pow((ext._y - step._y),2));
+                                 }
+                             }
+                         }
+                     itcurr++; 
+                     }
+                 getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition))+1);
+                 }
+            else if ((seedoors == 0) && (seesigns == 0))
+                { 
+                std::cout << "if ((seedoors == 0) && (seesigns == 0)) " <<std::endl;
+                Engine::Point2D<int> radius;
+                int agentsAroundHelp = 0;
+                //FUNCTION TO TRY TO TALK TO SOMEBODY - SEEMS COMPLICATED
+                for (radius._x = getPosition()._x - evacConfig.talkingRadius; radius._x <= getPosition()._x + evacConfig.talkingRadius; radius._x++)
+                    {
+                    for (radius._y = getPosition()._y - evacConfig.talkingRadius; radius._y <= getPosition()._y + evacConfig.talkingRadius; radius._y++)
+                        {
+                        if ( (radius._x < 0) || (radius._y < 0) || (radius._x > getWorld()->getBoundaries()._size._width-1) || (radius._y > getWorld()->getBoundaries()._size._height-1) || ((radius._x == getPosition()._x) && (radius._y == getPosition()._y)) || (getWorld()->getValue(eOccupied, radius) == 0) ) {continue;}
+                        else 
+                            {
+                            if ((getWorld()->getValue(eKnowledge, radius) == 1) && (getWorld()->getValue(eRoomOrCoridor, radius) == getWorld()->getValue(eRoomOrCoridor, getPosition())))
+                                {
+                                int talkOrNot = Engine::GeneralState::statistics().getUniformDistValue(0, 100);
+                                if (talkOrNot < evacConfig.talkingProb) // FULLY COPIED FROM IF SEESINS OR SEEDORS > 0
+                                    {
+
+					int doorfound = 0; // when door is located, it becomes one and is recorded as the temp goal of the agent
+					int i = 1;
+					Engine::Point2D<int> radius, step;
+					while ((doorfound == 0) && (this->_knowledge == 0))
+					    {
+					    std::cout << "!!!!!!!!!!!!!!!!!!!!!! i EQUAL SECOND" << i <<std::endl;
+					    for (radius._x = currentPos._x - i; radius._x <= currentPos._x + i; radius._x++)
+						{
+						for (radius._y = currentPos._y - i; radius._y <= currentPos._y + i; radius._y++)
+						    {
+						    if ( (radius._x<0) || (radius._x > getWorld()->getBoundaries()._size._width-1 ) || (radius._y<0) || (radius._y > getWorld()->getBoundaries()._size._height-1 ) || (getWorld()->getValue(eFloor, radius) != getWorld()->getValue(eFloor, currentPos))){continue;}
+						    else if (getWorld()->getValue(eDoors, radius) == 1)
+						        {
+						        if (getWorld()->getValue(eDoorValue, radius) == 1)
+						            {
+						            if (getWorld()->getValue(eDoorDir, radius) == 4) //L to R
+						                {
+						                Engine::Point2D<int> check;
+						                check._x = radius._x - 1;
+						                check._y = radius._y;
+						                if (getWorld()->getValue(eRoomOrCoridor, currentPos) == getWorld()->getValue(eRoomOrCoridor, check)) 
+						                    {
+						                    this->_currGoal.clear();
+						                    this->_currGoal.push_front(radius);
+						                    int j;
+						                    for (j = radius._y - evacConfig.maxDoorWidth; j <= radius._y + evacConfig.maxDoorWidth; j++)
+						                        {
+						                        Engine::Point2D<int> point;
+						                        point._x = radius._x;
+						                        point._y = j;
+						                        if ((j!= radius._y) && (getWorld()->getValue(eDoors, point) == 1) && (getWorld()->getValue(eDoorDir, index) == getWorld()->getValue(eDoorDir, point)) && (getWorld()->getValue(eDoorValue, index) == getWorld()->getValue(eDoorValue, point)) ) {this->_currGoal.push_front(point);} 
+						                        }
+						                    doorfound += 1;
+						                    this->_knowledge = 1;
+						                    std::cout << "DOORFOUND 1 CURRGOAL SHOULD BE UPDATED" <<std::endl;                                             
+						                    }
+						                }
+						            else if (getWorld()->getValue(eDoorDir, radius) == 1) //D to U
+						                {
+						                Engine::Point2D<int> check;
+						                check._x = radius._x;
+						                check._y = radius._y + 1;
+						                if (getWorld()->getValue(eRoomOrCoridor, currentPos) == getWorld()->getValue(eRoomOrCoridor, check))
+						                    {
+						                    this->_currGoal.clear();
+						                    this->_currGoal.push_front(radius);
+						                    int j;
+						                    for (j = radius._x - evacConfig.maxDoorWidth; j <= radius._x + evacConfig.maxDoorWidth; j++)
+						                        {
+						                        Engine::Point2D<int> point;
+						                        point._x = j;
+						                        point._y = radius._y;
+						                        if ((j!= radius._x) && (getWorld()->getValue(eDoors, point) == 1) && (getWorld()->getValue(eDoorDir, index) == getWorld()->getValue(eDoorDir, point)) && (getWorld()->getValue(eDoorValue, index) == getWorld()->getValue(eDoorValue, point)) ) {this->_currGoal.push_front(point);} 
+						                        }
+						                    doorfound += 1;
+						                    this->_knowledge = 1;
+						                    std::cout << "DOORFOUND 1 CURRGOAL SHOULD BE UPDATED" <<std::endl;                                             
+						                    }
+						                }
+						            else if (getWorld()->getValue(eDoorDir, radius) == 2) // R to L
+						                {
+						                Engine::Point2D<int> check;
+						                check._x = radius._x + 1;
+						                check._y = radius._y;
+						                if (getWorld()->getValue(eRoomOrCoridor, currentPos) == getWorld()->getValue(eRoomOrCoridor, check))
+						                    {
+						                    this->_currGoal.clear();
+						                    this->_currGoal.push_front(radius);
+						                    int j;
+						                    for (j = radius._y - evacConfig.maxDoorWidth; j <= radius._y + evacConfig.maxDoorWidth; j++)
+						                        {
+						                        Engine::Point2D<int> point;
+						                        point._x = radius._x;
+						                        point._y = j;
+						                        if ((j!= radius._y) && (getWorld()->getValue(eDoors, point) == 1) && (getWorld()->getValue(eDoorDir, index) == getWorld()->getValue(eDoorDir, point)) && (getWorld()->getValue(eDoorValue, index) == getWorld()->getValue(eDoorValue, point)) ) {this->_currGoal.push_front(point);} 
+						                        }
+						                    doorfound += 1;
+						                    this->_knowledge = 1;
+						                    std::cout << "DOORFOUND 1 CURRGOAL SHOULD BE UPDATED" <<std::endl;                                             
+						                    }
+						                }
+						            else if (getWorld()->getValue(eDoorDir, radius) == 3) // U TO D
+						                {
+						                Engine::Point2D<int> check;
+						                check._x = radius._x;
+						                check._y = radius._y - 1;
+						                if (getWorld()->getValue(eRoomOrCoridor, currentPos) == getWorld()->getValue(eRoomOrCoridor, check))
+						                    {
+						                    this->_currGoal.clear();
+						                    this->_currGoal.push_front(radius);
+						                    int j;
+						                    for (j = radius._x - evacConfig.maxDoorWidth; j <= radius._x + evacConfig.maxDoorWidth; j++)
+						                        {
+						                        Engine::Point2D<int> point;
+						                        point._x = j;
+						                        point._y = radius._y;
+						                        if ((j!= radius._x) && (getWorld()->getValue(eDoors, point) == 1) && (getWorld()->getValue(eDoorDir, index) == getWorld()->getValue(eDoorDir, point)) && (getWorld()->getValue(eDoorValue, index) == getWorld()->getValue(eDoorValue, point)) ) {this->_currGoal.push_front(point);} 
+						                        }
+						                    doorfound += 1;
+						                    this->_knowledge = 1;
+						                    std::cout << "DOORFOUND 1 CURRGOAL SHOULD BE UPDATED" <<std::endl;                                             
+						                    }
+						                }
+						            }
+						        }
+						    }
+						}
+					     i++;
+					     }
+					 i = 1; 
+					 currentPos = getPosition();
+					 _tempNextPosition = currentPos;
+					 float distance = sqrt(pow((_currGoal.front()._x - currentPos._x),2) + pow((_currGoal.front()._y - currentPos._y),2));
+				       
+
+					 // ITERATOR OVER CURRGOAL
+					 currGoalsList::const_iterator itcurr=_currGoal.begin();
+				    
+					 while(itcurr!=_currGoal.end())
+					     {
+					     const Engine::Point2D<int> & ext = *itcurr;
+
+					     for (step._x = currentPos._x - _speed; step._x <= currentPos._x + _speed; step._x++)
+						 {
+						 for (step._y = currentPos._y - _speed; step._y <= currentPos._y + _speed; step._y++)
+						     {
+						     if ( (step._x<0) || (step._x > getWorld()->getBoundaries()._size._width-1 ) || (step._y<0) || (step._y > getWorld()->getBoundaries()._size._height-1 ) || (getWorld()->getValue(eFloor, step) != getWorld()->getValue(eFloor, currentPos))){continue;} //PROTECT FROM OUT OF BOUNDARIES
+						     else if (sqrt(pow((ext._x - step._x),2) + pow((ext._y - step._y),2)) < distance )
+						         {
+						         if ( (getWorld()->getValue(eObstacles, step) == 1) || ( (getWorld()->getValue(eRoomOrCoridor, step) != getWorld()->getValue(eRoomOrCoridor, getPosition()) ) &&  (getWorld()->getValue(eRoomOrCoridor, step) != 0) ) || (getWorld()->getValue(eOccupied, step) == 1) ) {continue;} // here we define that the agent cant jump to the Coridor. 0 is door and everything else rooms         
+						// WE ALSO NEED TO DEFINE SOMEHOW THAT THE AGENTS DO NOT GO THROUGH CORNERS OR TO OTHER ROOMS
+						         _tempNextPosition = step;
+						         distance = sqrt(pow((ext._x - step._x),2) + pow((ext._y - step._y),2));
+						         }
+						     }
+						 }
+					     itcurr++; 
+					     }
+					 getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition))+1);
+                                         agentsAroundHelp = agentsAroundHelp + 1;
+                                    }
+                                else {continue;}
+                                }
+                            // get agent ID, check his knowledge  and then try to talk to him !!!!!!!!
+                            }
+                        }
+                    }
+                if (agentsAroundHelp == 0)
+                    {
+                    std::cout << "SEEDORS OR SEESIGNS EQUAL 0 THIRD" <<std::endl;
+                    _tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
+                    _tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
+                    // HOW TO FORBID THEM TO GO THROUGH WALLS?
+                    while ((_tempNextPosition._x < 0) || (_tempNextPosition._x > getWorld()->getBoundaries()._size._width-1) || (_tempNextPosition._y < 0) || (_tempNextPosition._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, _tempNextPosition) == 1) || (getWorld()->getValue(eRoomOrCoridor, _tempNextPosition) != getWorld()->getValue(eRoomOrCoridor, getPosition()) ) || (getWorld()->getValue(eOccupied, _tempNextPosition) == 1))
+                        {
+                        _tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
+                        _tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
+                        }
+                    getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition))+1);
+                    }
+
+                }
+            }
+
+        else if (_knowledge == 1)
+            {
+                 std::cout<<" Else if knowledge = 1 error"<<std::endl;
+                 Engine::Point2D<int> step, currentPos;
+                 currentPos = getPosition();
+                 _tempNextPosition = currentPos;
+                 float distance = sqrt(pow((_currGoal.front()._x - currentPos._x),2) + pow((_currGoal.front()._y - currentPos._y),2));
+                 // ITERATOR OVER CURRGOAL
+                 currGoalsList::const_iterator itcurr=_currGoal.begin();
+            
+	         while(itcurr!=_currGoal.end())
+	             {
+		     const Engine::Point2D<int> & ext = *itcurr;
+
+                     for (step._x = currentPos._x - _speed; step._x <= currentPos._x + _speed; step._x++)
+                         {
+                         for (step._y = currentPos._y - _speed; step._y <= currentPos._y + _speed; step._y++)
+                             {
+                             if ( (step._x<0) || (step._x > getWorld()->getBoundaries()._size._width-1 ) || (step._y<0) || (step._y > getWorld()->getBoundaries()._size._height-1 ) || (getWorld()->getValue(eFloor, step) != getWorld()->getValue(eFloor, currentPos))){continue;} //PROTECT FROM OUT OF BOUNDARIES
+                             else if (sqrt(pow((ext._x - step._x),2) + pow((ext._y - step._y),2)) < distance )
+                                 {
+                                 if ( (getWorld()->getValue(eObstacles, step) == 1) || ( (getWorld()->getValue(eRoomOrCoridor, step) != getWorld()->getValue(eRoomOrCoridor, getPosition()) ) &&  (getWorld()->getValue(eRoomOrCoridor, step) != 0) ) || (getWorld()->getValue(eOccupied, step) == 1) ) {continue;} // here we define that the agent cant jump to the Coridor. 1 is room and 2 is door         
+                        // WE ALSO NEED TO DEFINE SOMEHOW THAT THE AGENTS DO NOT GO THROUGH CORNERS OR TO OTHER ROOMS
+                                 _tempNextPosition = step;
+                                 distance = sqrt(pow((ext._x - step._x),2) + pow((ext._y - step._y),2));
+                                 }
+                             }
+                         }
+                     itcurr++; 
+                     }
+                 getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition))+1);
+
+            }
+        } // END OF FIRST GENERAL CONDITION
+
+    else if ((getWorld()->getValue(eRoomOrCoridor, getPosition())==0) && (getWorld()->getValue(eStairs, getPosition())!=2) ) // IN A REGULAR DOOR NOT LEADING TO STAIRS
+        {
+           std::cout << "In one of the doors not to stairs" << std::endl;
+            _knowledge = 0;
+            int seesigns = 0;
+            int seedoors = 0;
+            Engine::Point2D<int> index, currentPos, compare; // compare - DOOR EXIT DIRECTION NEXT POINT
+            if (getWorld()->getValue(eDoorDir, getPosition()) == 4) 
+                {
+                compare._x = getPosition()._x + 1;
+                compare._y = getPosition()._y;
+                }
+            else if (getWorld()->getValue(eDoorDir, getPosition()) == 1) 
+                {
+                compare._x = getPosition()._x;
+                compare._y = getPosition()._y - 1;
+                }      
+            else if (getWorld()->getValue(eDoorDir, getPosition()) == 2) 
+                {
+                compare._x = getPosition()._x - 1;
+                compare._y = getPosition()._y;
+                }      
+            else if (getWorld()->getValue(eDoorDir, getPosition()) == 3) 
+                {
+                compare._x = getPosition()._x;
+                compare._y = getPosition()._y + 1; 
+                }                
+
+            currentPos = getPosition();
+            // HOW TO DEAL WITH CORNERED VIEW BLOCKED ?!?!?!?!? IT IS STILL IN RADIUS BUT IN REALITY NOT SEEN
+            for (index._x = currentPos._x - _vision; index._x <= currentPos._x + _vision; index._x++) 
+                {
+                for (index._y = currentPos._y - _vision; index._y <= currentPos._y + _vision; index._y++)
+                    {
+                    if ( (index._x<0) || (index._x > getWorld()->getBoundaries()._size._width-1 ) || (index._y<0) || (index._y > getWorld()->getBoundaries()._size._height-1 ) || (getWorld()->getValue(eFloor, index) != getWorld()->getValue(eFloor, compare))){continue;}
+                    else if ( (getWorld()->getValue(eSigns, index) == 1) && (getWorld()->getValue(eRoomOrCoridor, index) == getWorld()->getValue(eRoomOrCoridor, compare)) ) {seesigns += 1;}
+                    else if (getWorld()->getValue(eDoors, index) == 1) 
+                        {
+                        if (getWorld()->getValue(eDoorValue, index) == 1)
+                            {
+                            if (getWorld()->getValue(eDoorDir, index) == 4) //L to R
+                                {
+                                Engine::Point2D<int> check;
+                                check._x = index._x - 1;
+                                check._y = index._y;
+                                if (getWorld()->getValue(eRoomOrCoridor, compare) == getWorld()->getValue(eRoomOrCoridor, check)) {seedoors +=1;}
+                                }
+                            else if (getWorld()->getValue(eDoorDir, index) == 1) //D to U
+                                {
+                                Engine::Point2D<int> check;
+                                check._x = index._x;
+                                check._y = index._y + 1;
+                                if (getWorld()->getValue(eRoomOrCoridor, compare) == getWorld()->getValue(eRoomOrCoridor, check)) {seedoors +=1;}
+                                }
+                            else if (getWorld()->getValue(eDoorDir, index) == 2) // R to L
+                                {
+                                Engine::Point2D<int> check;
+                                check._x = index._x + 1;
+                                check._y = index._y;
+                                if (getWorld()->getValue(eRoomOrCoridor, compare) == getWorld()->getValue(eRoomOrCoridor, check)) {seedoors +=1;}
+                                }
+                            else if (getWorld()->getValue(eDoorDir, index) == 3) // U TO D
+                                {
+                                Engine::Point2D<int> check;
+                                check._x = index._x;
+                                check._y = index._y - 1;
+                                if (getWorld()->getValue(eRoomOrCoridor, compare) == getWorld()->getValue(eRoomOrCoridor, check)) {seedoors +=1;}
+                                }
+                            }
                         }
                     }
                 }
-            getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition))+1);
 
-                  }
-            else if((seedoors == 0) && (seesigns == 0))// RANDOM WALK IF DOESNT SEE SIGN OR DOOR
+            if (((seedoors > 0) || (seesigns > 0)) && (this->_knowledge == 0)) 
+                {    
+                std::cout << "SEEDORS OR SEESIGNS MORE THAN 0 two" <<std::endl;
+                int doorfound = 0; // when door is located, it becomes one and is recorded as the temp goal of the agent
+                int i = 1;
+                Engine::Point2D<int> radius, step;
+                while ((doorfound == 0) && (this->_knowledge == 0))
+                    {
+                    std::cout << "!!!!!!!!!!!!!!!!!!!!!! i EQUAL FOURTH" << i <<std::endl;
+                    for (radius._x = currentPos._x - i; radius._x <= currentPos._x + i; radius._x++)
+                        {
+                        for (radius._y = currentPos._y - i; radius._y <= currentPos._y + i; radius._y++)
+                            {
+                            if ( (radius._x<0) || (radius._x > getWorld()->getBoundaries()._size._width-1 ) || (radius._y<0) || (radius._y > getWorld()->getBoundaries()._size._height-1 ) || (getWorld()->getValue(eFloor, radius) != getWorld()->getValue(eFloor, compare))){continue;} // currentPos was compare
+                            else if (getWorld()->getValue(eDoors, radius) == 1)
+                                {
+                                if (getWorld()->getValue(eDoorValue, radius) == 1)
+                                    {
+                                    if (getWorld()->getValue(eDoorDir, radius) == 4) //L to R
+                                        {
+                                        Engine::Point2D<int> check;
+                                        check._x = radius._x - 1;
+                                        check._y = radius._y;
+                                        if (getWorld()->getValue(eRoomOrCoridor, compare) == getWorld()->getValue(eRoomOrCoridor, check)) 
+                                            {
+                                            this->_currGoal.clear();
+                                            this->_currGoal.push_front(radius);
+                                            int j;
+                                            for (j = radius._y - evacConfig.maxDoorWidth; j <= radius._y + evacConfig.maxDoorWidth; j++)
+                                                {
+                                                Engine::Point2D<int> point;
+                                                point._x = radius._x;
+                                                point._y = j;
+                                                if ((j!= radius._y) && (getWorld()->getValue(eDoors, point) == 1) && (getWorld()->getValue(eDoorDir, index) == getWorld()->getValue(eDoorDir, point)) && (getWorld()->getValue(eDoorValue, index) == getWorld()->getValue(eDoorValue, point)) ) {this->_currGoal.push_front(point);} 
+                                                }
+                                            doorfound += 1;
+                                            this->_knowledge = 1;
+                                            std::cout << "DOORFOUND 1 CURRGOAL SHOULD BE UPDATED" <<std::endl;                                             
+                                            }
+                                        }
+                                    else if (getWorld()->getValue(eDoorDir, radius) == 1) //D to U
+                                        {
+                                        Engine::Point2D<int> check;
+                                        check._x = radius._x;
+                                        check._y = radius._y + 1;
+                                        if (getWorld()->getValue(eRoomOrCoridor, compare) == getWorld()->getValue(eRoomOrCoridor, check))
+                                            {
+                                            this->_currGoal.clear();
+                                            this->_currGoal.push_front(radius);
+                                            int j;
+                                            for (j = radius._x - evacConfig.maxDoorWidth; j <= radius._x + evacConfig.maxDoorWidth; j++)
+                                                {
+                                                Engine::Point2D<int> point;
+                                                point._x = j;
+                                                point._y = radius._y;
+                                                if ((j!= radius._x) && (getWorld()->getValue(eDoors, point) == 1) && (getWorld()->getValue(eDoorDir, index) == getWorld()->getValue(eDoorDir, point)) && (getWorld()->getValue(eDoorValue, index) == getWorld()->getValue(eDoorValue, point)) ) {this->_currGoal.push_front(point);} 
+                                                }
+                                            doorfound += 1;
+                                            this->_knowledge = 1;
+                                            std::cout << "DOORFOUND 1 CURRGOAL SHOULD BE UPDATED" <<std::endl;                                             
+                                            }
+                                        }
+                                    else if (getWorld()->getValue(eDoorDir, radius) == 2) // R to L
+                                        {
+                                        Engine::Point2D<int> check;
+                                        check._x = radius._x + 1;
+                                        check._y = radius._y;
+                                        if (getWorld()->getValue(eRoomOrCoridor, compare) == getWorld()->getValue(eRoomOrCoridor, check))
+                                            {
+                                            this->_currGoal.clear();
+                                            this->_currGoal.push_front(radius);
+                                            int j;
+                                            for (j = radius._y - evacConfig.maxDoorWidth; j <= radius._y + evacConfig.maxDoorWidth; j++)
+                                                {
+                                                Engine::Point2D<int> point;
+                                                point._x = radius._x;
+                                                point._y = j;
+                                                if ((j!= radius._y) && (getWorld()->getValue(eDoors, point) == 1) && (getWorld()->getValue(eDoorDir, index) == getWorld()->getValue(eDoorDir, point)) && (getWorld()->getValue(eDoorValue, index) == getWorld()->getValue(eDoorValue, point)) ) {this->_currGoal.push_front(point);} 
+                                                }
+                                            doorfound += 1;
+                                            this->_knowledge = 1;
+                                            std::cout << "DOORFOUND 1 CURRGOAL SHOULD BE UPDATED" <<std::endl;                                             
+                                            }
+                                        }
+                                    else if (getWorld()->getValue(eDoorDir,radius) == 3) // U TO D
+                                        {
+                                        Engine::Point2D<int> check;
+                                        check._x = radius._x;
+                                        check._y = radius._y - 1;
+                                        if (getWorld()->getValue(eRoomOrCoridor, compare) == getWorld()->getValue(eRoomOrCoridor, check))
+                                            {
+                                            this->_currGoal.clear();
+                                            this->_currGoal.push_front(radius);
+                                            int j;
+                                            for (j = radius._x - evacConfig.maxDoorWidth; j <= radius._x + evacConfig.maxDoorWidth; j++)
+                                                {
+                                                Engine::Point2D<int> point;
+                                                point._x = j;
+                                                point._y = radius._y;
+                                                if ((j!= radius._x) && (getWorld()->getValue(eDoors, point) == 1) && (getWorld()->getValue(eDoorDir, index) == getWorld()->getValue(eDoorDir, point)) && (getWorld()->getValue(eDoorValue, index) == getWorld()->getValue(eDoorValue, point)) ) {this->_currGoal.push_front(point);} 
+                                                }
+                                            doorfound += 1;
+                                            this->_knowledge = 1;
+                                            std::cout << "DOORFOUND 1 CURRGOAL SHOULD BE UPDATED" <<std::endl;                                             
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                     i++;
+                     }
+                 i = 1; 
+                 currentPos = getPosition();
+                 _tempNextPosition = currentPos;
+                 float distance = sqrt(pow((_currGoal.front()._x - currentPos._x),2) + pow((_currGoal.front()._y - currentPos._y),2));
+               
+
+                 // ITERATOR OVER CURRGOAL
+                 currGoalsList::const_iterator itcurr=_currGoal.begin();
+            
+	         while(itcurr!=_currGoal.end())
+	             {
+		     const Engine::Point2D<int> & ext = *itcurr;
+
+                     for (step._x = currentPos._x - _speed; step._x <= currentPos._x + _speed; step._x++)
+                         {
+                         for (step._y = currentPos._y - _speed; step._y <= currentPos._y + _speed; step._y++)
+                             {
+                             if ( (step._x<0) || (step._x > getWorld()->getBoundaries()._size._width-1 ) || (step._y<0) || (step._y > getWorld()->getBoundaries()._size._height-1 ) || (getWorld()->getValue(eFloor, step) != getWorld()->getValue(eFloor, compare))){continue;} //PROTECT FROM OUT OF BOUNDARIES
+                             else if (sqrt(pow((ext._x - step._x),2) + pow((ext._y - step._y),2)) < distance )
+                                 {
+                                 if ( (getWorld()->getValue(eObstacles, step) == 1) || ( (getWorld()->getValue(eRoomOrCoridor, step) != getWorld()->getValue(eRoomOrCoridor, compare)) && (getWorld()->getValue(eRoomOrCoridor, step) != 0) ) || (getWorld()->getValue(eOccupied, step) == 1) ) {continue;} // here we define that the agent cant jump to the Coridor. 1 is room and 2 is door         
+                        // WE ALSO NEED TO DEFINE SOMEHOW THAT THE AGENTS DO NOT GO THROUGH CORNERS OR TO OTHER ROOMS
+                                 _tempNextPosition = step;
+                                 distance = sqrt(pow((ext._x - step._x),2) + pow((ext._y - step._y),2));
+                                 }
+                             }
+                         }
+                     itcurr++; 
+                     }
+                 getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition))+1);
+                 }
+            else if ((seedoors == 0) && (seesigns == 0)) // NOTE!! AGENTS WONT TALK IN THE DOOR, ONLY AFTER PASSING IT
                 {
-                std::cout << "SEEDORS OR SEESIGNS EQUAL 0" <<std::endl;
+                Engine::Point2D<int> compare;                //DOOR EXIT DIRECTION NEXT POINT
+                if (getWorld()->getValue(eDoorDir, getPosition()) == 4) 
+                    {
+                    compare._x = getPosition()._x + 1;
+                    compare._y = getPosition()._y;
+                    }
+                else if (getWorld()->getValue(eDoorDir, getPosition()) == 1) 
+                    {
+                    compare._x = getPosition()._x;
+                    compare._y = getPosition()._y - 1;
+                    }      
+                else if (getWorld()->getValue(eDoorDir, getPosition()) == 2) 
+                    {
+                    compare._x = getPosition()._x - 1;
+                    compare._y = getPosition()._y;
+                    }      
+                else if (getWorld()->getValue(eDoorDir, getPosition()) == 3) 
+                    {
+                    compare._x = getPosition()._x;
+                    compare._y = getPosition()._y + 1; 
+                    }                
+
                 _tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
                 _tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
-                 // HOW TO FORBID THEM TO GO THROUGH WALLS?
-                while ((_tempNextPosition._x < 0) || (_tempNextPosition._x > getWorld()->getBoundaries()._size._width-1) || (_tempNextPosition._y < 0) || (_tempNextPosition._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, _tempNextPosition) == 1) || (getWorld()->getValue(eRoomOrCoridor, _tempNextPosition) != 1) || (getWorld()->getValue(eOccupied, _tempNextPosition) == 1))
+                    // HOW TO FORBID THEM TO GO THROUGH WALLS?
+                while ((_tempNextPosition._x < 0) || (_tempNextPosition._x > getWorld()->getBoundaries()._size._width-1) || (_tempNextPosition._y < 0) || (_tempNextPosition._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, _tempNextPosition) == 1) || ( getWorld()->getValue(eRoomOrCoridor, _tempNextPosition) != getWorld()->getValue(eRoomOrCoridor, compare) ) || (getWorld()->getValue(eOccupied, _tempNextPosition) == 1))
                     {
                     _tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
                     _tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
                     }
                 getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition))+1);
-                }      
-            }
-        else if (_knowledge == 1) //else added 13.05.2017
+                }  
+        }
+
+
+    else if ((getWorld()->getValue(eRoomOrCoridor, getPosition())==0) && (getWorld()->getValue(eStairs, getPosition())==2) ) // IN A DOOR LEADING TO STAIRS
+        {
+        std::cout << "In one of thedoors leading to stairs" << std::endl;
+        _knowledge = 0;
+        Engine::Point2D<int> radius, compare, currentPos, around, step;
+        int turnDoorFound = 0;
+        int i = 1;
+        currentPos = getPosition();
+// WE NEED TO DO SOMETHING WITH SPEEDS, SUCH AS EXAMPLE:
+        if (_speed == 3) {_speed = 2;}
+        else if (_speed == 2) {_speed = 1;}
+// STILL NEED TO THINK ABOUT SPEED CONVERSION
+        if (getWorld()->getValue(eDoorDir, getPosition()) == 4) 
             {
-            Engine::Point2D<int> step, currentPos;
-            currentPos = getPosition();
-            _tempNextPosition = currentPos; //_currGoal; //added 15.05.2017, was _tempNextPosition = currentPos;
-            int i;
+            compare._x = getPosition()._x + 1;
+            compare._y = getPosition()._y;
+            }
+        else if (getWorld()->getValue(eDoorDir, getPosition()) == 1) 
+            {
+            compare._x = getPosition()._x;
+            compare._y = getPosition()._y - 1;
+            }      
+        else if (getWorld()->getValue(eDoorDir, getPosition()) == 2) 
+            {
+            compare._x = getPosition()._x - 1;
+            compare._y = getPosition()._y;
+            }      
+        else if (getWorld()->getValue(eDoorDir, getPosition()) == 3) 
+            {
+            compare._x = getPosition()._x;
+            compare._y = getPosition()._y + 1; 
+            }                
+        while (turnDoorFound == 0)
+            {
+            for (radius._x = currentPos._x - i; radius._x <= currentPos._x + i; radius._x++)
+                {
+                for (radius._y = currentPos._y - i; radius._y <= currentPos._y + i; radius._y++)
+                    {
+                    if ( (radius._x<0) || (radius._x > getWorld()->getBoundaries()._size._width-1 ) || (radius._y<0) || (radius._y > getWorld()->getBoundaries()._size._height-1 ) || (getWorld()->getValue(eFloor, radius) != getWorld()->getValue(eFloor, compare))){continue;}
+                    else if ((getWorld()->getValue(eStairs, radius) == 3))
+                        {
+                        this->_currGoal.clear();
+                        this->_currGoal.push_front(radius);
+                        for (around._x = radius._x - evacConfig.maxDoorWidth; around._x <= radius._x + evacConfig.maxDoorWidth; around._x++)
+                            {
+                            for (around._y = radius._y - evacConfig.maxDoorWidth; around._y <= radius._y + evacConfig.maxDoorWidth; around._y++)
+                                {
+                                if ( (getWorld()->getValue(eStairs, around) == 3) && ((around._x != radius._x) || (around._y != radius._y)) ) {this->_currGoal.push_front(around);}
+                                }
+                            }
+                        turnDoorFound = turnDoorFound +1;
+                        }                  
+                    }
+                }
+            i++;
+            }
+        
+
+        i = 1;
+        _tempNextPosition = currentPos;
+        float distance = sqrt(pow((_currGoal.front()._x - currentPos._x),2) + pow((_currGoal.front()._y - currentPos._y),2));
+            
+
+         // ITERATOR OVER CURRGOAL
+        currGoalsList::const_iterator itcurr=_currGoal.begin();
+         
+        while(itcurr!=_currGoal.end())
+            {
+	    const Engine::Point2D<int> & ext = *itcurr;
+
             for (step._x = currentPos._x - _speed; step._x <= currentPos._x + _speed; step._x++)
                 {
                 for (step._y = currentPos._y - _speed; step._y <= currentPos._y + _speed; step._y++)
                     {
-                    if ( (step._x<0) || (step._x > getWorld()->getBoundaries()._size._width-1 ) || (step._y<0) || (step._y > getWorld()->getBoundaries()._size._height-1 )){continue;} //PROTECT FROM OUT OF BOUNDARIES
-                    else if (sqrt(pow((_currGoal._x - step._x),2) + pow((_currGoal._y - step._y),2)) <= sqrt(pow((_currGoal._x - _tempNextPosition._x),2) + pow((_currGoal._y - _tempNextPosition._y),2)) )
+                    if ( (step._x<0) || (step._x > getWorld()->getBoundaries()._size._width-1 ) || (step._y<0) || (step._y > getWorld()->getBoundaries()._size._height-1 ) || (getWorld()->getValue(eFloor, step) != getWorld()->getValue(eFloor, currentPos))){continue;} //PROTECT FROM OUT OF BOUNDARIES
+                    else if (sqrt(pow((ext._x - step._x),2) + pow((ext._y - step._y),2)) < distance )
                         {
-                        if ((step._x < 0) || (step._x > getWorld()->getBoundaries()._size._width-1) || (step._y < 0) || (step._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, step) == 1) || (getWorld()->getValue(eRoomOrCoridor, step) == 0) || (getWorld()->getValue(eOccupied, step) == 1) ) {continue;} // here we define that the agent cant jump to the corridor. 1 is room and 2 is door         
+                        if ( (getWorld()->getValue(eObstacles, step) == 1) || ( (getWorld()->getValue(eStairs, step) != 1 ) && (getWorld()->getValue(eStairs, step) != 3 ) ) || (getWorld()->getValue(eOccupied, step) == 1)) {continue;} // here we define that the agent cant jump to the Coridor. 1 is room and 2 is door         
                         // WE ALSO NEED TO DEFINE SOMEHOW THAT THE AGENTS DO NOT GO THROUGH CORNERS OR TO OTHER ROOMS
                         _tempNextPosition = step;
+                        distance = sqrt(pow((ext._x - step._x),2) + pow((ext._y - step._y),2));
                         }
                     }
                 }
-            getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition))+1);
+                itcurr++; 
             }
-        }
-    else if (getWorld()->getValue(eRoomOrCoridor, getPosition())==0) // IN THE CORRIDOR
+            getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition))+1);
+        } 
+
+
+    else if ((getWorld()->getValue(eRoomOrCoridor, getPosition())!=0) && (getWorld()->getValue(eStairs, getPosition())==1) ) // ON THE STAIRS
         {
-        int seesigns = 0;
-        Engine::Point2D<int> index, currentPos;
+         std::cout << "on the stairs" << std::endl;
+        Engine::Point2D<int> radius, compare, currentPos, around, step;
         currentPos = getPosition();
-        // WE NEED TO MAKE SURE THE SIGNS IN THE CORRIDOR ARE DISTINGUISHED FROM THE ONES IN ROOMS AND NOT TAKE INTO ACCOUNT SIGNS IN ROOMS FOR THIS
-        for (index._x = currentPos._x - _vision; index._x <= currentPos._x + _vision; index._x++) 
-            {
-            for (index._y = currentPos._y - _vision; index._y <= currentPos._y + _vision; index._y++)
-                {
-                if ( (index._x<0) || (index._x > getWorld()->getBoundaries()._size._width-1 ) || (index._y<0) || (index._y > getWorld()->getBoundaries()._size._height-1 )){continue;}
-                else if ((getWorld()->getValue(eSigns, index) == 1) && (getWorld()->getValue(eRoomOrCoridor, index)==0 )) {seesigns += 1;}
-                }
-            }        
+        _tempNextPosition = currentPos;
+        float distance = sqrt(pow((_currGoal.front()._x - currentPos._x),2) + pow((_currGoal.front()._y - currentPos._y),2));
             
-        if ((seesigns == 0) && (_knowledge == 0)) //RANDOM WALK IF DOESNT SEE SIGNS OR DOESNT KNOW WHERE TO GO
-             {
-             _tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
-             _tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
-             // HOW TO FORBID THEM TO GO THROUGH WALLS?
-             while ((_tempNextPosition._x < 0) || (_tempNextPosition._x > getWorld()->getBoundaries()._size._width-1) || (_tempNextPosition._y < 0) || (_tempNextPosition._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, _tempNextPosition) == 1) || (getWorld()->getValue(eRoomOrCoridor, _tempNextPosition) != 0) || (getWorld()->getValue(eOccupied, _tempNextPosition) == 1))
-                 {
-                 _tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
-                 _tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
-                 }
-             getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition))+1);
-             }
-        
-        else if (_knowledge == 1) // HE KNOWS WHERE TO GO 
+         // ITERATOR OVER CURRGOAL
+        currGoalsList::const_iterator itcurr=_currGoal.begin();
+         
+        while(itcurr!=_currGoal.end())
             {
-            Engine::Point2D<int> step, currentPos;
-            currentPos = getPosition();
-            _tempNextPosition = currentPos;
-            int i = 1;
+	    const Engine::Point2D<int> & ext = *itcurr;
             for (step._x = currentPos._x - _speed; step._x <= currentPos._x + _speed; step._x++)
                 {
                 for (step._y = currentPos._y - _speed; step._y <= currentPos._y + _speed; step._y++)
                     {
-                    if ( (step._x<0) || (step._x > getWorld()->getBoundaries()._size._width-1 ) || (step._y<0) || (step._y > getWorld()->getBoundaries()._size._height-1 )){continue;} //protect fom out of boundaries
-                    else if (sqrt(pow((_currGoal._x - step._x),2) + pow((_currGoal._y - step._y),2)) <= sqrt(pow((_currGoal._x - _tempNextPosition._x),2) + pow((_currGoal._y - _tempNextPosition._y),2)) )
+                    if ( (step._x<0) || (step._x > getWorld()->getBoundaries()._size._width-1 ) || (step._y<0) || (step._y > getWorld()->getBoundaries()._size._height-1 ) || (getWorld()->getValue(eFloor, step) != getWorld()->getValue(eFloor, currentPos))){continue;} //PROTECT FROM OUT OF BOUNDARIES
+                    else if (sqrt(pow((ext._x - step._x),2) + pow((ext._y - step._y),2)) < distance )
                         {
-                        if ((step._x < 0) || (step._x > getWorld()->getBoundaries()._size._width-1) || (step._y < 0) || (step._y > getWorld()->getBoundaries()._size._height-1)) {continue;}
-                        else if ((getWorld()->getValue(eObstacles, step) != 1) && (getWorld()->getValue(eRoomOrCoridor, step) == 0) && (getWorld()->getValue(eOccupied, step) == 0)) {_tempNextPosition = step;}
-                        }
-                    }
-                }
-            getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition))+1);
-            }
-        else if ((_knowledge == 0) && (seesigns > 0))
-            {
-//// THIS IS THE NEW TEST LINE
-	    Engine::World* world  = getWorld();
-	    EvacWorld & evacWorld = (EvacWorld&) *world;
-	    auto _exits = evacWorld.returnList();
-
-
-// WE CHANGE THIS
-/*            _currGoal = _exits[0];
-            int i;
-            for (i= 0; i< _exits.size(); i++)
-                {
-                if (sqrt(pow((_currGoal._x - getPosition()._x),2) + pow((_currGoal._y - getPosition()._y),2)) >= sqrt(pow((_exits[i]._x - getPosition()._x),2) + pow((_exits[i]._y - getPosition()._y),2))) {_currGoal = _exits[i];}
-                }*/
-        _currGoal = evacConfig.exitconfiglist.front();
-        EvacConfig::ExitConfigList::const_iterator it4=evacConfig.exitconfiglist.begin();
-	while(it4!=evacConfig.exitconfiglist.end())
-	{
-		const Engine::Point2D<int> & ext = *it4;
-
-        if (sqrt(pow((_currGoal._x - getPosition()._x),2) + pow((_currGoal._y - getPosition()._y),2)) >= sqrt(pow((ext._x - getPosition()._x),2) + pow((ext._y - getPosition()._y),2))) {_currGoal = ext;}
-
-		// new exit ' THIS LOOKS UNNECESSARY
-        /*Engine::Point2D<int> index;
-        index._x = ext._x;
-        index._y = ext._y;
-        //setMaxValue(eExits, index, 1);
-        setValue(eExits, index, 1);*/
-
-
-        it4++; 
-        }
-            _knowledge = 1;
-            // NOW SELECT STEP LIKE PREVIOUS - DONE !!!!
-            Engine::Point2D<int> step, currentPos;
-            currentPos = getPosition();
-            _tempNextPosition = currentPos;
-            //i = 1;
-            for (step._x = currentPos._x - _speed; step._x <= currentPos._x + _speed; step._x++)
-                {
-                for (step._y = currentPos._y - _speed; step._y <= currentPos._y + _speed; step._y++)
-                    {
-                    if ( (step._x<0) || (step._x > getWorld()->getBoundaries()._size._width-1 ) || (step._y<0) || (step._y > getWorld()->getBoundaries()._size._height-1 )){continue;} //protect from ooboundariies
-                    else if (sqrt(pow((_currGoal._x - step._x),2) + pow((_currGoal._y - step._y),2)) <= sqrt(pow((_currGoal._x - _tempNextPosition._x),2) + pow((_currGoal._y - _tempNextPosition._y),2)) )
-                        {
-                        if ((step._x < 0) || (step._x > getWorld()->getBoundaries()._size._width-1) || (step._y < 0) || (step._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, step) == 1) || (getWorld()->getValue(eRoomOrCoridor, step) != 0) || (getWorld()->getValue(eOccupied, step) == 1) ) {continue;}
+                        if ( (getWorld()->getValue(eObstacles, step) == 1) || ( (getWorld()->getValue(eStairs, step) != 1 ) && (getWorld()->getValue(eStairs, step) != 3 ) && (getWorld()->getValue(eStairs, step) != 4) ) || (getWorld()->getValue(eOccupied, step) == 1)) {continue;} // here we define that the agent cant jump to the Coridor. 1 is room and 2 is door         
+                        // WE ALSO NEED TO DEFINE SOMEHOW THAT THE AGENTS DO NOT GO THROUGH CORNERS OR TO OTHER ROOMS
                         _tempNextPosition = step;
+                        distance = sqrt(pow((ext._x - step._x),2) + pow((ext._y - step._y),2));
                         }
                     }
                 }
-            getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition))+1);
+                itcurr++; 
             }
-        }
-    else if (getWorld()->getValue(eRoomOrCoridor, getPosition())==2) //WHEN YOU ARE AT THE DOOR
+            getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition))+1);
+        } 
+
+
+    else if ((getWorld()->getValue(eRoomOrCoridor, getPosition())!=0) && (getWorld()->getValue(eStairs, getPosition())==3) ) // ON THE STAIRS TURN POINT
         {
-        // _exits - list with exit signs
-        _knowledge = 0;
-        int seesigns = 0;
-        int seeexits = 0;
-        Engine::Point2D<int> index, currentPos;
+        std::cout << "on stairs turn point" << std::endl;
+        Engine::Point2D<int> radius, currentPos, around, step;
+        int jumpDoorFound = 0;
+        int i = 1;
         currentPos = getPosition();
-        for (index._x = currentPos._x - _vision; index._x <= currentPos._x + _vision; index._x++) 
+// WE NEED TO DO SOMETHING WITH SPEEDS, SUCH AS EXAMPLE:
+        if (_speed == 3) {_speed = 2;}
+        else if (_speed == 2) {_speed = 1;}
+// STILL NEED TO THINK ABOUT SPEED CONVERSION
+                
+        while (jumpDoorFound == 0)
             {
-            for (index._y = currentPos._y - _vision; index._y <= currentPos._y + _vision; index._y++)
+            for (radius._x = currentPos._x - i; radius._x <= currentPos._x + i; radius._x++)
                 {
-                if ( (index._x<0) || (index._x > getWorld()->getBoundaries()._size._width-1 ) || (index._y<0) || (index._y > getWorld()->getBoundaries()._size._height-1 )){continue;} // protect against OOP
-                else if ((getWorld()->getValue(eSigns, index) == 1) && ((getWorld()->getValue(eRoomOrCoridor, index) == 0)) ) {seesigns += 1;}
-                else if (getWorld()->getValue(eExits, index) == 1 ) {seeexits +=1;}
+                for (radius._y = currentPos._y - i; radius._y <= currentPos._y + i; radius._y++)
+                    {
+                    if ( (radius._x<0) || (radius._x > getWorld()->getBoundaries()._size._width-1 ) || (radius._y<0) || (radius._y > getWorld()->getBoundaries()._size._height-1 ) || (getWorld()->getValue(eFloor, radius) != getWorld()->getValue(eFloor, currentPos))){continue;}
+                    else if ((getWorld()->getValue(eStairs, radius) == 4))
+                        {
+                        this->_currGoal.clear();
+                        this->_currGoal.push_front(radius);
+                        for (around._x = radius._x - evacConfig.maxDoorWidth; around._x <= radius._x + evacConfig.maxDoorWidth; around._x++)
+                            {
+                            for (around._y = radius._y - evacConfig.maxDoorWidth; around._y <= radius._y + evacConfig.maxDoorWidth; around._y++)
+                                {
+                                if ( (getWorld()->getValue(eStairs, around) == 4) && ((around._x != radius._x) || (around._y != radius._y)) ) {this->_currGoal.push_front(around);}
+                                }
+                            }
+                        jumpDoorFound = jumpDoorFound +1;
+                        }                  
+                    }
                 }
+            i++;
             }
-        if ((seesigns == 0) && (seeexits == 0)) // RANDOM IF DOESNT KNOW ANYTHING
-        {
-        _tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
-        _tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
-        // HOW TO FORBID THEM TO GO THROUGH WALLS?
-        while ((_tempNextPosition._x < 0) || (_tempNextPosition._x > getWorld()->getBoundaries()._size._width-1) || (_tempNextPosition._y < 0) || (_tempNextPosition._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, _tempNextPosition) == 1) || (getWorld()->getValue(eRoomOrCoridor, _tempNextPosition) != 0) || (getWorld()->getValue(eOccupied, _tempNextPosition) == 1))
+        
+        i = 1;
+        _tempNextPosition = currentPos;
+        float distance = sqrt(pow((_currGoal.front()._x - currentPos._x),2) + pow((_currGoal.front()._y - currentPos._y),2));
+            
+
+         // ITERATOR OVER CURRGOAL
+        currGoalsList::const_iterator itcurr=_currGoal.begin();
+         
+        while(itcurr!=_currGoal.end())
             {
-            _tempNextPosition._x = getPosition()._x + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
-            _tempNextPosition._y = getPosition()._y + Engine::GeneralState::statistics().getUniformDistValue((-1 * _speed), _speed);
-            }
-        getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition))+1);
-        }
-        else if ((seesigns > 0) || (seeexits > 0)) //sees exits or signs 
-            {
-// THIS IS THE NEW TEST LINES ' TRYING A IFFERENT APPROACH RIGHT NOW
-            Engine::World* world = getWorld();
-            EvacWorld & evacWorld = (EvacWorld &) *world;
-            auto _exits = evacWorld.returnList();
+	    const Engine::Point2D<int> & ext = *itcurr;
 
-           /* _currGoal = _exits[0];
-            int i; 
-            for (i= 0; i< _exits.size(); i++)
-                {
-                if (sqrt(pow((_currGoal._x - getPosition()._x),2) + pow((_currGoal._y - getPosition()._y),2)) >= sqrt(pow((_exits[i]._x - getPosition()._x),2) + pow((_exits[i]._y - getPosition()._y),2))) {_currGoal = _exits[i];}
-                }*/
-
-
-        _currGoal = evacConfig.exitconfiglist.front();
-        EvacConfig::ExitConfigList::const_iterator it4=evacConfig.exitconfiglist.begin();
-	while(it4!=evacConfig.exitconfiglist.end())
-	{
-		const Engine::Point2D<int> & ext = *it4;
-
-        if (sqrt(pow((_currGoal._x - getPosition()._x),2) + pow((_currGoal._y - getPosition()._y),2)) >= sqrt(pow((ext._x - getPosition()._x),2) + pow((ext._y - getPosition()._y),2))) {_currGoal = ext;}
-
-        it4++;
-        }
-
-
-            _knowledge = 1;                
-            Engine::Point2D<int> step, currentPos;
-            currentPos = getPosition();            
-            _tempNextPosition = currentPos;
-           // i = 1;
             for (step._x = currentPos._x - _speed; step._x <= currentPos._x + _speed; step._x++)
                 {
                 for (step._y = currentPos._y - _speed; step._y <= currentPos._y + _speed; step._y++)
                     {
-                    if ( (step._x<0) || (step._x > getWorld()->getBoundaries()._size._width-1 ) || (step._y<0) || (step._y > getWorld()->getBoundaries()._size._height-1 )){continue;} //protet against OOBound
-                    else if (sqrt(pow((_currGoal._x - step._x),2) + pow((_currGoal._y - step._y),2)) <= sqrt(pow((_currGoal._x - _tempNextPosition._x),2) + pow((_currGoal._y - _tempNextPosition._y),2)) )
+                    if ( (step._x<0) || (step._x > getWorld()->getBoundaries()._size._width-1 ) || (step._y<0) || (step._y > getWorld()->getBoundaries()._size._height-1 ) || (getWorld()->getValue(eFloor, step) != getWorld()->getValue(eFloor, currentPos))){continue;} //PROTECT FROM OUT OF BOUNDARIES
+                    else if (sqrt(pow((ext._x - step._x),2) + pow((ext._y - step._y),2)) < distance )
                         {
-                        if ((step._x < 0) || (step._x > getWorld()->getBoundaries()._size._width-1) || (step._y < 0) || (step._y > getWorld()->getBoundaries()._size._height-1) || (getWorld()->getValue(eObstacles, step) == 1) || (getWorld()->getValue(eRoomOrCoridor, step) != 0) || (getWorld()->getValue(eOccupied, step) == 1) ) {continue;}
+                        if ( (getWorld()->getValue(eObstacles, step) == 1) || ( (getWorld()->getValue(eStairs, step) != 1 ) && (getWorld()->getValue(eStairs, step) != 4 ) ) || (getWorld()->getValue(eOccupied, step) == 1)) {continue;} // here we define that the agent cant jump to the Coridor. 1 is room and 2 is door         
+                        // WE ALSO NEED TO DEFINE SOMEHOW THAT THE AGENTS DO NOT GO THROUGH CORNERS OR TO OTHER ROOMS
                         _tempNextPosition = step;
+                        distance = sqrt(pow((ext._x - step._x),2) + pow((ext._y - step._y),2));
                         }
                     }
                 }
+            itcurr++; 
+            }
             getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition))+1);
-            }        
-        }
+        }     
 
-std::cout<<"SetTempNextPos correctly"<<std::endl;
-}
+    else if ((getWorld()->getValue(eRoomOrCoridor, getPosition())!=0) && (getWorld()->getValue(eStairs, getPosition())==4) ) // ON THE STAIRS JUMP POINT
+        {
+        std::cout << "On the jump point" << std::endl;
+        EvacConfig::JumpCellsList::const_iterator itjump=evacConfig.jumpCellsfrom.begin();
+        EvacConfig::JumpCellsList::const_iterator itjumpto=evacConfig.jumpCellsto.begin();
+        while(itjump!=evacConfig.jumpCellsfrom.end())
+            {
+	    const Engine::Point2D<int> & ext = *itjump;
+            const Engine::Point2D<int> & ext2 = *itjumpto;
+            if ( (getPosition()._x == ext._x) && (getPosition()._y == ext._y) )
+                {
+                if (getWorld()->getValue(eOccupied, ext2)==0) 
+                    {
+                    _tempNextPosition._x = ext2._x;
+                    _tempNextPosition._y = ext2._y;
+                    }
+                else
+                    {
+                    _tempNextPosition._x = getPosition()._x;
+                    _tempNextPosition._y = getPosition()._y;
+                    }
+                getWorld()->setValue(eTempCells, _tempNextPosition, getWorld()->getValue(eTempCells, (_tempNextPosition))+1);
+                break;
+                }
+            itjump++;
+            itjumpto++;
+            }
+        }  
+} // END OF SETTEMPNEXTPOSITION
+
+
 
 
 
@@ -353,7 +948,6 @@ void EvacAgent::updateState()
 std::cout<<"UPDATE STATE BEGINS"<<std::endl;  
 
        const EvacConfig & evacConfig = (const EvacConfig &)getWorld()->getConfig();
-       // IS THIS THE CORRECT WAY TO REMOVE EXITED AGENTS ?!?!??!?!!?!?
        if (_exited == true)
         {
         return;
@@ -362,12 +956,10 @@ std::cout<<"UPDATE STATE BEGINS"<<std::endl;
         {
         _exited = true;
         getWorld()->removeAgent(this);
-        // EVERYTHING BELOW IS NEW ADDITION 15.05
-	    Engine::World* world  = getWorld();
-	    EvacWorld & evacWorld = (EvacWorld&) *world;
-	    auto al = evacWorld.returnAllList();
-            evacWorld.removeRemovedAgent(this);
-        //al.erase(this);
+	Engine::World* world  = getWorld();
+	EvacWorld & evacWorld = (EvacWorld&) *world;
+	auto al = evacWorld.returnAllList();
+        evacWorld.removeRemovedAgent(this);
         }
     
     else if(_panicked >= 1) // panic increases with more not moving
@@ -382,17 +974,16 @@ std::cout<<"UPDATE STATE BEGINS"<<std::endl;
     else if((_notMoved > evacConfig.returnPanicTresh()) && (_panicked == 0))
         {
         _panicked = 1;
-        _knowledge = 0;
+        _knowledge = 0; // KNOWLEDGE CAN BE LEFT IF TOO PANICKED ?!?!?!?!!??!?!
         _notMoved = 0;
         }
 
     std::cout<<"UpdateState continued correctly until settempnext"<<std::endl;  
-        SetTempNextPosition(); // NOT SURE IF THIS HAS TO BE HERE -
-//        NextPosition();
+    SetTempNextPosition();
 
-std::cout<<"Updatestate correctly"<<std::endl;
+    std::cout<<"Updatestate correctly"<<std::endl;
 
-// IDE on windows for methods ( or devian c++)
+    // IDE on windows for methods ( or devian c++)
 
 
 }
@@ -408,9 +999,8 @@ void EvacAgent::registerAttributes()
 	registerIntAttribute("evacTime"); 
 	registerIntAttribute("tempNextPosition_x"); 
 	registerIntAttribute("tempNextPosition_y");
-	registerIntAttribute("currGoal_x");
-	registerIntAttribute("currGoal_y");
-        //registerIntAttribute("tempNextPosition");  
+	registerIntAttribute("currGoal.begin()._x");
+	registerIntAttribute("currGoal.begin()._y");
         std::cout<<"RegisterAttributes correctly"<<std::endl;          
 }
 
@@ -424,9 +1014,9 @@ void EvacAgent::serialize()
         serializeAttribute("evacTime", _evacTime);
         serializeAttribute("evacDist", _evacDist);
         serializeAttribute("tempNextPosition_x", _tempNextPosition._x);      
-        serializeAttribute("tempNextPosition_y", _tempNextPosition._y);   
-        serializeAttribute("currGoal_x", _currGoal._x);   
-        serializeAttribute("currGoal_y", _currGoal._y);     
+        serializeAttribute("tempNextPosition_y", _tempNextPosition._y);
+        serializeAttribute("currGoal.begin()._x", _currGoal.front()._x);   
+        serializeAttribute("currGoal.begin()._y", _currGoal.front()._y);     
         std::cout<<"Serialize correctly"<<std::endl;  
 }
 	
@@ -437,10 +1027,7 @@ std::string EvacAgent::agentCharac()
 	return charac.str();
     
 }
-/*void EvacAgent::setExit( const Engine::Point2D<int> & exit )
-{
-	_exit = exit;
-}*/
+
 
 } // namespace Evacuation
 
