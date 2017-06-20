@@ -139,10 +139,16 @@ void EvacWorld::createRasters()
         // outer boundaries
             if ( ((index._x > 4) && (index._x < 205) && (index._y == 5)) || ((index._x > 4) && (index._x < 205) && (index._y == 204)) ) {setValue(eObstacles, index, 1);}
             else if ( ((index._x > 304) && (index._x < 505) && (index._y == 5)) || ((index._x > 304) && (index._x < 505) && (index._y == 204)) ) {setValue(eObstacles, index, 1);}
-            else if ( ((index._x > 604) && (index._x < 805) && (index._y == 5)) || ((index._x > 604) && (index._x < 805) && (index._y == 204)) ) {setValue(eObstacles, index, 1);}
+            //else if ( ((index._x > 604) && (index._x < 805) && (index._y == 5)) || ((index._x > 604) && (index._x < 805) && (index._y == 204)) ) {setValue(eObstacles, index, 1);}
             else if ( ((index._y > 4) && (index._y < 205) && (index._x == 5)) || ((index._y > 4) && (index._y < 205) && (index._x == 204)) ) {setValue(eObstacles, index, 1);}
             else if ( ((index._y > 4) && (index._y < 205) && (index._x == 305)) || ((index._y > 4) && (index._y < 205) && (index._x == 504)) ) {setValue(eObstacles, index, 1);}
-            else if ( ((index._y > 4) && (index._y < 205) && (index._x == 605)) || ((index._y > 4) && (index._y < 205) && (index._x == 804)) ) {setValue(eObstacles, index, 1);}
+            //else if ( ((index._y > 4) && (index._y < 205) && (index._x == 605)) || ((index._y > 4) && (index._y < 205) && (index._x == 804)) ) {setValue(eObstacles, index, 1);}
+
+        // new third floor 
+
+            else if ( ((index._x > 4) && (index._x < 205) && (index._y == 305)) || ((index._x > 4) && (index._x < 205) && (index._y == 504)) ) {setValue(eObstacles, index, 1);}
+            else if ( ((index._y > 304) && (index._y < 505) && (index._x == 5)) || ((index._y > 304) && (index._y < 505) && (index._x == 204)) ) {setValue(eObstacles, index, 1);}
+            
 
         // now placing inner boundaries
 
@@ -163,7 +169,9 @@ void EvacWorld::createRasters()
             else if ( (index._y == 160) && (index._x > 350) && (index._x < 401) ) {setValue(eObstacles, index, 1);}
             else if ( (index._x == 400) && (index._y >160) && (index._y < 204) ) {setValue(eObstacles, index, 1);}
             // floor 0 
-            else if ( (index._x == 660) && (index._y > 5) && (index._y < 204) ) {setValue(eObstacles, index, 1);}
+            //else if ( (index._x == 660) && (index._y > 5) && (index._y < 204) ) {setValue(eObstacles, index, 1);}
+            // new line
+            else if ( (index._x == 60) && (index._y > 305) && (index._y < 504) ) {setValue(eObstacles, index, 1);}
             }
   
             // SETTING UP STAIRS RIGHT NOW 
@@ -183,9 +191,13 @@ void EvacWorld::createRasters()
             else if ( (index._y == 217) && (index._x > 484) && (index._x < 492) ) {setValue(eObstacles, index, 1);}            
         
             // floor 0 - since no stairs, I will just add the extra land piece here
-            else if ( (index._x == 788) && (index._y > 204) && (index._y < 208) ) {setValue(eObstacles, index, 1);}
-            else if ( (index._x == 791) && (index._y > 204) && (index._y < 208) ) {setValue(eObstacles, index, 1);}
-            else if ( (index._y == 207) && (index._x > 787) && (index._y < 792) ) {setValue(eObstacles, index, 1);}
+            //else if ( (index._x == 788) && (index._y > 204) && (index._y < 208) ) {setValue(eObstacles, index, 1);}
+            //else if ( (index._x == 791) && (index._y > 204) && (index._y < 208) ) {setValue(eObstacles, index, 1);}
+            //else if ( (index._y == 207) && (index._x > 787) && (index._y < 792) ) {setValue(eObstacles, index, 1);}
+            // new lines
+            else if ( (index._x == 188) && (index._y > 504) && (index._y < 508) ) {setValue(eObstacles, index, 1);}
+            else if ( (index._x == 191) && (index._y > 504) && (index._y < 508) ) {setValue(eObstacles, index, 1);}
+            else if ( (index._y == 507) && (index._x > 187) && (index._y < 192) ) {setValue(eObstacles, index, 1);}
             }
         
          // setting up stairs on the eStairs raster
@@ -353,12 +365,12 @@ void EvacWorld::createRasters()
             setValue(eFloor, index, 2);
             setValue(eRoomOrCoridor, index, 2);
             } 
-        else if ( ( (index._x > 605) && (index._x < 804) ) && ( (index._y > 5) && (index._y < 204) ) ) 
+        else if ( ( (index._x > 5) && (index._x < 204) ) && ( (index._y > 305) && (index._y < 504) ) ) 
             {
             setValue(eFloor, index, 1);
             setValue(eRoomOrCoridor, index, 3);
             } 
-        else if ( ( (index._x > 788) && (index._x < 791) ) && ( (index._y > 204) && (index._y < 207) ) ) 
+        else if ( ( (index._x > 188) && (index._x < 191) ) && ( (index._y > 504) && (index._y < 507) ) ) 
             {
             setValue(eFloor, index, 1);
             }
@@ -410,17 +422,17 @@ void EvacWorld::createRasters()
             setValue(eRoomOrCoridor, index, 13);
             }
         // floor 0
-        else if ( ( (index._x > 605) && (index._x < 660) ) && ( (index._y > 5) && (index._y < 204) ) ) 
+        else if ( ( (index._x > 5) && (index._x < 60) ) && ( (index._y > 305) && (index._y < 504) ) ) 
             {
             setValue(eRoomOrCoridor, index, 14);
             }
-        else if ( ( (index._x > 605) && (index._x < 660) ) && ( (index._y > 5) && (index._y < 204) ) ) 
+        //else if ( ( (index._x > 5) && (index._x < 60) ) && ( (index._y > 305) && (index._y < 504) ) ) 
+          //  {
+            //setValue(eRoomOrCoridor, index, 15);
+            //}
+        else if ( ( (index._x > 188) && (index._x < 191) ) && ( (index._y > 504) && (index._y < 507) ) ) 
             {
             setValue(eRoomOrCoridor, index, 15);
-            }
-        else if ( ( (index._x > 788) && (index._x < 791) ) && ( (index._y > 204) && (index._y < 207) ) ) 
-            {
-            setValue(eRoomOrCoridor, index, 16);
             }
         }
 
