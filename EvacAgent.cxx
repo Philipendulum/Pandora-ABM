@@ -377,6 +377,11 @@ void EvacAgent::SetTempNextPosition()
 					 i = 1; 
 					 currentPos = getPosition();
 					 _tempNextPosition = currentPos;
+
+
+/////////////////////////////HERE WE TAKE OUT SO THAT WHEN KNOWLEDGE CHANGES FROM 0 to 1 the agent only moves the next step 
+
+
 					 float distance = sqrt(pow((_currGoal.front()._x - currentPos._x),2) + pow((_currGoal.front()._y - currentPos._y),2));
 				       
 

@@ -48,7 +48,7 @@ enum Rasters
         eFloor,
 
 	// number of agents in each cell
-	eNumAgents,
+	//eNumAgents,
          
         // shows whether agent here has knowledge of the next exit or no 
         eKnowledge

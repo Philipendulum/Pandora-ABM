@@ -68,13 +68,14 @@ void EvacWorld::createAgents()
 	// avoid agent in obstacle and cases where more than 1 agent occupies the same cell
 	agent->setRandomPosition();
         int floorValue = floor;
-	while((getValue(eObstacles, agent->getPosition())==1) || (getValue(eNumAgents, agent->getPosition()) > 0) ||/* floorValue != getValue(eFloor, agent->getPosition()) ||*/ (getValue(eDoors, agent->getPosition())==1) || (getValue(eExits, agent->getPosition())==1) || (getValue(eOccupied, agent->getPosition())>0) || (getValue(eFloor, agent->getPosition())==0) )
+	while((getValue(eObstacles, agent->getPosition())==1) ||/* floorValue != getValue(eFloor, agent->getPosition()) ||*/ (getValue(eDoors, agent->getPosition())==1) || (getValue(eExits, agent->getPosition())==1) || (getValue(eOccupied, agent->getPosition())>0) || (getValue(eFloor, agent->getPosition())==0) )
 		{
 		agent->setRandomPosition();
 		}
 	//Engine::Point2D<int> p (76,423);
 	//agent->setPosition(p); - constructor for specified position placements
-	setValue(eNumAgents, agent->getPosition(), getValue(eNumAgents, agent->getPosition())+1);
+	//setValue(eNumAgents, agent->getPosition(), getValue(eNumAgents, agent->getPosition())+1); - NOT NECESSARY AT ALL AS THE RASTER AS WELL
+        setValue(eOccupied, agent->getPosition(), 1);
 	std::cout<<agent->agentCharac()<<std::endl;
         al.push_back(agent);
         setValue(eOccupied, agent->getPosition(), 1);
@@ -117,8 +118,8 @@ void EvacWorld::createRasters()
 	registerDynamicRaster("eFloor", true, eFloor);
 	getDynamicRaster(eFloor).setInitValues(0, evacConfig.floorNumber, 0);
 	
-	registerDynamicRaster("numAgents", true, eNumAgents);
-	getDynamicRaster(eNumAgents).setInitValues(0, std::numeric_limits<int>::max(), 0);
+	//registerDynamicRaster("numAgents", true, eNumAgents);
+	//getDynamicRaster(eNumAgents).setInitValues(0, std::numeric_limits<int>::max(), 0);
 
 	registerDynamicRaster("eKnowledge", true, eKnowledge);
 	getDynamicRaster(eKnowledge).setInitValues(0, 1, 0);

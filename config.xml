@@ -68,7 +68,7 @@
 		<jump4 xfrom="489" yfrom="207" xto="189" yto="506"/>
 	</jumps>
  
-	<environment floorNumber = "3" doorNumber = "32" jumpNumber = "4" turnNumber = "4" maxDoorWidth="3"/>
+	<environment floorNumber = "2" doorNumber = "32" jumpNumber = "4" turnNumber = "4" maxDoorWidth="3"/>
 
 	<!-- Agents Parameters  -->
 	<agents num="50" childPercentage="15" elderlyPercentage="10" malePercentage="59" notMovedPanicTreshold="20" talkingProb="25" talkingRadius="10" />
