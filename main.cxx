@@ -22,6 +22,8 @@ int main(int argc, char *argv[])
 
 		Evacuation::EvacWorld myWorld (new Evacuation::EvacConfig(fileName), myWorld.useOpenMPSingleNode());
 		
+
+		std::cout << "nthread?: " << myWorld.getNumTasks() << std::endl;
 		myWorld.initialize(argc, argv);
 		myWorld.run();
 	}

@@ -3,14 +3,14 @@
 	<!-- Output Directory -->
 	<output resultsFile="./data/evacuation.h5" logsDir="./logs"/>
 	<!-- Number of Steps and Raster Sizes -->
-	<numSteps value="5" serializeResolution="1"/>
-	<size width="510" height="510"/>
+	<numSteps value="2000" serializeResolution="1"/>
+	<size width="510" height="220"/>
 	<!-- Raster specifics -->
 	<exits>
-		<exit1 x="204" y="340"/>
-		<exit2 x="204" y="341"/>
-		<exit3 x="100" y="305"/>
-		<exit4 x="101" y="305"/>
+		<exit1 x="305" y="70"/>
+		<exit2 x="305" y="71"/>
+		<exit3 x="504" y="140"/>
+		<exit4 x="504" y="141"/>
 	</exits>
 	<doors>
 // R = 4 L= 2 U = 1 D = 3 
@@ -18,7 +18,7 @@
 		<door2 x="50" y="32" DIR="4" VALUE="1"/>
 		<door3 x="105" y="50" DIR="3" VALUE="1"/>
 		<door4 x="106" y="50" DIR="3" VALUE="1"/>
-		<door5 x="40" y="100" DIR="1" VALUE="1"/>
+		<door5 x="40" y="100" DIR="1" VALUE="1"/> 
 		<door6 x="40" y="101" DIR="1" VALUE="1"/>
 		<door7 x="186" y="204" DIR="3" VALUE="1"/>
 		<door8 x="187" y="204" DIR="3" VALUE="1"/>
@@ -28,50 +28,47 @@
 		<door12 x="181" y="150" DIR="0" VALUE="0"/>
 		<door13 x="150" y="100" DIR="2" VALUE="1"/>
 		<door14 x="150" y="101" DIR="2" VALUE="1"/>
-		<door15 x="380" y="50" DIR="3" VALUE="1"/>
-		<door16 x="381" y="50" DIR="3" VALUE="1"/>
+		<door15 x="370" y="50" DIR="3" VALUE="1"/>
+		<door16 x="371" y="50" DIR="3" VALUE="1"/>
 		<door17 x="450" y="40" DIR="2" VALUE="1"/>
 		<door18 x="450" y="41" DIR="2" VALUE="1"/>
-		<door19 x="450" y="120" DIR="0" VALUE="0"/>
-		<door20 x="450" y="121" DIR="0" VALUE="0"/>
-		<door21 x="400" y="160" DIR="1" VALUE="1"/>
-		<door22 x="401" y="160" DIR="1" VALUE="1"/>
-		<door23 x="490" y="150" DIR="3" VALUE="1"/>
-		<door24 x="491" y="150" DIR="3" VALUE="1"/>
-		<door25 x="486" y="204" DIR="3" VALUE="1"/>
-		<door26 x="487" y="204" DIR="3" VALUE="1"/>
-		<door27 x="189" y="504" DIR="1" VALUE="1"/>
-		<door28 x="190" y="504" DIR="1" VALUE="1"/>
-		<door29 x="204" y="340" DIR="4" VALUE="1"/>
-		<door30 x="204" y="341" DIR="4" VALUE="1"/>
-		<door31 x="100" y="305" DIR="1" VALUE="1"/>
-		<door32 x="101" y="305" DIR="1" VALUE="1"/>
+		<door19 x="450" y="120" DIR="4" VALUE="1"/>
+		<door20 x="450" y="121" DIR="4" VALUE="1"/>
+		<door21 x="370" y="160" DIR="1" VALUE="1"/>
+		<door22 x="371" y="160" DIR="1" VALUE="1"/>
+		<door23 x="490" y="150" DIR="1" VALUE="1"/>
+		<door24 x="491" y="150" DIR="1" VALUE="1"/>
+		<door25 x="489" y="204" DIR="1" VALUE="1"/>
+		<door26 x="490" y="204" DIR="1" VALUE="1"/>
+		<door27 x="305" y="70" DIR="2" VALUE="1"/>
+		<door28 x="305" y="71" DIR="2" VALUE="1"/>
+		<door29 x="504" y="140" DIR="4" VALUE="1"/>
+		<door30 x="504" y="141" DIR="4" VALUE="1"/>
 	</doors>
         
 	<signs>
 		<sign1 x="186" y="204"/>
 		<sign2 x="486" y="204"/>
+ 		<sign3 x="349" y="150"/>
+ 		<sign4 x="40" y="51"/>
+ 		<sign5 x="149" y="70"/>
+ 		<sign6 x="410" y="6"/>                
 	</signs>
 
 	<turns>
-		<turn1 x="187" y="215"/>
-		<turn2 x="187" y="216"/>
-		<turn3 x="487" y="215"/>
-		<turn4 x="487" y="216"/>
+		<turn1 x="188" y="215"/>
+		<turn2 x="188" y="216"/>
 	</turns>
 
 
 	<jumps>
-		<jump1 xfrom="189" yfrom="207" xto="488" yto="205"/>
-		<jump2 xfrom="190" yfrom="207" xto="488" yto="206"/>
-		<jump3 xfrom="490" yfrom="207" xto="190" yto="506"/>
-		<jump4 xfrom="489" yfrom="207" xto="189" yto="506"/>
+		<jump1 xfrom="189" yfrom="207" xto="489" yto="206"/>
+		<jump2 xfrom="190" yfrom="207" xto="490" yto="206"/>
 	</jumps>
  
-	<environment floorNumber = "2" doorNumber = "32" jumpNumber = "4" turnNumber = "4" maxDoorWidth="3"/>
+	<environment evacuationThreshold="80" floorNumber = "2" doorNumber = "30" jumpNumber = "2" turnNumber = "2" exitNumber="4" signNumber="6" maxDoorWidth="3" systemRasters="23" delayMin="0" delayMax="20" chemoDecayRate="5"/>
 
 	<!-- Agents Parameters  -->
-	<agents num="50" childPercentage="15" elderlyPercentage="10" malePercentage="59" notMovedPanicTreshold="20" talkingProb="25" talkingRadius="10" />
+	<agents num="500" initialPanicked="5" childPercentage="11" elderlyPercentage="20" malePercentage="49" notMovedPanicTreshold="30" talkingProb="50" talkingRadius="19" getuptime="10" visionAdult="75" visionElderly="35" visionChild="75" manTrampling="4" womanTrampling="3" elderlyTrampling="1" childTrampling="2" elderlyWeightMean="70.5" elderlyWeightStDev="10" childWeightMean="31.9" childWeightStDev="4" manWeightMean="77.2" manWeightStDev="10" womanWeightMean="63.6" womanWeightStDev="8" childStairsSpeed="1" adultStairsSpeed="2" elderlyStairsSpeed="1" childSpeed="2" adultSpeed="3" elderlySpeed="1" />
 
 </config>
-

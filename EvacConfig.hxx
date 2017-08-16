@@ -32,18 +32,47 @@ class EvacConfig : public Engine::Config
 
 
 	int _numAgents;
+        int initialPanicked;
+        int evacuationThreshold;
         int childPercentage;
         int elderlyPercentage;
         int malePercentage;
+        int adultSpeed;
+        int elderlySpeed;
+        int childSpeed;
+        int adultStairsSpeed;
+        int elderlyStairsSpeed;
+        int childStairsSpeed;
         int floorNumber;
         int jumpNumber;
         int turnNumber;
         int doorNumber;
+        int exitNumber;
+        int signNumber;
         int notMovedPanicTreshold;
         int talkingProb;
         int talkingRadius;
         int maxDoorWidth;
-        
+        int systemRasters;
+        int visionAdult;
+        int visionElderly;
+        int visionChild;
+        float elderlyTrampling;
+        float childTrampling;
+        float manTrampling;
+        float womanTrampling;
+        float delayMin;
+        float delayMax;
+        float elderlyWeightMean;
+        float elderlyWeightStDev;
+        float childWeightMean;
+        float childWeightStDev;
+        float manWeightMean;
+        float manWeightStDev;
+        float womanWeightMean;
+        float womanWeightStDev; 
+        int getuptime;
+        int chemoDecayRate;        
         // exit list from config
         ExitConfigList exitconfiglist;
         	
@@ -73,6 +102,7 @@ public:
         int returnElderlyPerc() const{return elderlyPercentage;}
         int returnFloorNumber() const{return floorNumber;}
         int returnPanicTresh() const{return notMovedPanicTreshold;}
+        int returnInitialPanicked() const{return initialPanicked;}
         
 	
 	friend class EvacWorld;

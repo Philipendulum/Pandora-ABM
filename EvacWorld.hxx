@@ -15,7 +15,10 @@ enum Rasters
 	eObstacles,
 
 	// exits, 1 if true, 0 if false
-	eExits, 
+	eExits,
+
+        //exited agents count
+        eExitedAgents,
 
         // temporary count of agents wanting to move to this cell. 
         eTempCells,
@@ -25,6 +28,9 @@ enum Rasters
         
         // stairs
         eStairs, // 0 for rooms and doors, 1 - stairs, 2 - stair door, 3 - for the stairs turning , 4 for position of jumping from stairs of one floor to another
+
+        // stairs side 1 for left 2 for right
+        eStairsSide,
     
         //chemotaxi-trails
         eChemoTaxiTrails,
@@ -41,19 +47,33 @@ enum Rasters
         // sets up the door passing direction for exit strategy if door value is 1 (D to U is 1 , R to L is 2, U to D is 3,  L to R is 4 )
         eDoorDir,
 
+        // door number in range of doors
+        eDoorNumber,
+
+        // turn number in range of turn points
+        eTurnNumber,
+
+        // jump number in range of jump points
+        eJumpNumber,
+
         // room or corridor (any room > 0 door == 0) // SHOULD BE CHANGED TO 0 DOOR and so on...
         eRoomOrCoridor,
 	
         // floor number for initial distribution
         eFloor,
-
-	// number of agents in each cell
-	//eNumAgents,
          
         // shows whether agent here has knowledge of the next exit or no 
-        eKnowledge
+        eKnowledge,
+       
+        eMass,
 
-	// eDeaths, - Does not seem required now.
+        ePanic,
+
+        eDead,
+
+        eDarkness,
+ 
+        eTime,
 
 };
 
@@ -73,12 +93,17 @@ class EvacWorld: public Engine::World
         void ResetOccupied();
         void ResetKnowledge();
         void UpdateTempValues();
+        void ResetPanic();
+        void ResetMass();
+        void ChemoDecay();
+        int DecayStatus;
 
  
 
 public:
 	EvacWorld( EvacConfig * config, Engine::Scheduler * scheduler = 0);
 	virtual ~EvacWorld();
+        void run();
         typedef std::list<EvacAgent*> AL;
         AL al; // listof all agents
         AL returnAllList() const{return al;}
