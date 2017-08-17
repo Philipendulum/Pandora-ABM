@@ -87,6 +87,6 @@
 	<environment evacuationThreshold="100" floorNumber = "2" doorNumber = "38" jumpNumber = "2" turnNumber = "2" exitNumber="12" signNumber="6" maxDoorWidth="4" systemRasters="22" delayMin="2" delayMax="60" chemoDecayRate="5"/>
 
 	<!-- Agents Parameters  -->
-	<agents num="100" initialPanicked="5" childPercentage="11" elderlyPercentage="20" malePercentage="49" notMovedPanicTreshold="30" talkingProb="50" talkingRadius="19" getuptime="20" visionAdult="75" visionElderly="35" visionChild="75" manTrampling="4" womanTrampling="3" elderlyTrampling="2" childTrampling="2" elderlyWeightMean="70.5" elderlyWeightStDev="10" childWeightMean="31.9" childWeightStDev="4" manWeightMean="77.2" manWeightStDev="10" womanWeightMean="63.6" womanWeightStDev="8" childStairsSpeed="1" adultStairsSpeed="2" elderlyStairsSpeed="1" childSpeed="2" adultSpeed="3" elderlySpeed="1" />
+	<agents num="100" initialPanicked="5" childPercentage="11" elderlyPercentage="20" malePercentage="49" notMovedPanicTreshold="30" talkingProb="50" talkingRadius="19" getuptime="20" visionAdult="75" visionElderly="35" visionChild="75" manTrampling="4" womanTrampling="3" elderlyTrampling="2" childTrampling="2" elderlyWeightMean="70.5" elderlyWeightStDev="9" childWeightMean="31.9" childWeightStDev="4" manWeightMean="77.2" manWeightStDev="10" womanWeightMean="63.6" womanWeightStDev="8" childStairsSpeed="1" adultStairsSpeed="2" elderlyStairsSpeed="1" childSpeed="2" adultSpeed="3" elderlySpeed="1" />
 
 </config>
