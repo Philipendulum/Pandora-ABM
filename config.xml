@@ -3,7 +3,7 @@
 	<!-- Output Directory -->
 	<output resultsFile="./data/evacuation.h5" logsDir="./logs"/>
 	<!-- Number of Steps and Raster Sizes -->
-	<numSteps value="2200" serializeResolution="1"/>
+	<numSteps value="200" serializeResolution="1"/>
 	<size width="510" height="220"/>
 	<!-- Raster specifics -->
 	<exits>
@@ -16,6 +16,9 @@
 		<exit7 x="504" y="142"/>
 		<exit8 x="504" y="119"/>
 		<exit9 x="305" y="72"/>
+		<exit10 x="305" y="73"/>
+		<exit11 x="504" y="143"/>
+		<exit12 x="504" y="118"/>
 
 	</exits>
 	<doors>
@@ -55,6 +58,9 @@
 		<door33 x="305" y="72" DIR="2" VALUE="1"/>
 		<door34 x="504" y="142" DIR="4" VALUE="1"/>
 		<door35 x="504" y="119" DIR="4" VALUE="1"/>
+		<door36 x="305" y="73" DIR="2" VALUE="1"/>
+		<door37 x="504" y="143" DIR="4" VALUE="1"/>
+		<door38 x="504" y="118" DIR="4" VALUE="1"/>
 
 	</doors>
         
@@ -78,9 +84,9 @@
 		<jump2 xfrom="190" yfrom="207" xto="490" yto="206"/>
 	</jumps>
  
-	<environment evacuationThreshold="80" floorNumber = "2" doorNumber = "35" jumpNumber = "2" turnNumber = "2" exitNumber="9" signNumber="6" maxDoorWidth="3" systemRasters="23" delayMin="0" delayMax="20" chemoDecayRate="5"/>
+	<environment evacuationThreshold="100" floorNumber = "2" doorNumber = "38" jumpNumber = "2" turnNumber = "2" exitNumber="12" signNumber="6" maxDoorWidth="4" systemRasters="22" delayMin="2" delayMax="60" chemoDecayRate="5"/>
 
 	<!-- Agents Parameters  -->
-	<agents num="5000" initialPanicked="5" childPercentage="11" elderlyPercentage="20" malePercentage="49" notMovedPanicTreshold="40" talkingProb="50" talkingRadius="19" getuptime="25" visionAdult="75" visionElderly="35" visionChild="75" manTrampling="4" womanTrampling="3" elderlyTrampling="2" childTrampling="2" elderlyWeightMean="70.5" elderlyWeightStDev="10" childWeightMean="31.9" childWeightStDev="4" manWeightMean="77.2" manWeightStDev="10" womanWeightMean="63.6" womanWeightStDev="8" childStairsSpeed="1" adultStairsSpeed="2" elderlyStairsSpeed="1" childSpeed="2" adultSpeed="3" elderlySpeed="1" />
+	<agents num="100" initialPanicked="5" childPercentage="11" elderlyPercentage="20" malePercentage="49" notMovedPanicTreshold="30" talkingProb="50" talkingRadius="19" getuptime="20" visionAdult="75" visionElderly="35" visionChild="75" manTrampling="4" womanTrampling="3" elderlyTrampling="2" childTrampling="2" elderlyWeightMean="70.5" elderlyWeightStDev="10" childWeightMean="31.9" childWeightStDev="4" manWeightMean="77.2" manWeightStDev="10" womanWeightMean="63.6" womanWeightStDev="8" childStairsSpeed="1" adultStairsSpeed="2" elderlyStairsSpeed="1" childSpeed="2" adultSpeed="3" elderlySpeed="1" />
 
 </config>

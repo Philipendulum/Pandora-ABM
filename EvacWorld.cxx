@@ -217,10 +217,7 @@ void EvacWorld::createRasters()
 	getDynamicRaster(eDead).setInitValues(0, 1, 0);  
 
 	registerDynamicRaster("eDarkness", true, eDarkness);
-	getDynamicRaster(eDarkness).setInitValues(0, 1, 0); 
-
-	registerDynamicRaster("eTime", true, eTime);
-	getDynamicRaster(eTime).setInitValues(0, _config->getNumSteps(), 0);     
+	getDynamicRaster(eDarkness).setInitValues(0, 1, 0);    
 
 
 // SETTING UP OBSTACLES, BORDERS, STAIRS
@@ -903,10 +900,6 @@ void EvacWorld::run()
 	{
 		step();
                 _step++;
-		    for(auto index : getBoundaries())
-			{
-			setValue(eTime, index, (getValue(eTime, index) + 1));
-			}
 	}
         if ((al.size() <= ((100 - evacConfig.evacuationThreshold)*evacConfig._numAgents/100)) || _step == _config->getNumSteps())
             {

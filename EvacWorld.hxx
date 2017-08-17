@@ -72,8 +72,6 @@ enum Rasters
         eDead,
 
         eDarkness,
- 
-        eTime,
 
 };
 
