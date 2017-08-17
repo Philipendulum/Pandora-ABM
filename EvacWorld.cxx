@@ -152,7 +152,7 @@ void EvacWorld::createAgents()
 void EvacWorld::createRasters()
 {
     const EvacConfig & evacConfig = (const EvacConfig &)getConfig();
-        std::cout << "Rasters" << std::endl;
+        //std::cout << "Rasters" << std::endl;
 	registerDynamicRaster("obstacles", true, eObstacles);
 	getDynamicRaster(eObstacles).setInitValues(0, 1, 0);
 
@@ -226,7 +226,7 @@ void EvacWorld::createRasters()
 // SETTING UP OBSTACLES, BORDERS, STAIRS
 
 // SETTING UP WALLS OUTER AND INNER 
-        std::cout << "Rasters2" << std::endl;
+        //std::cout << "Rasters2" << std::endl;
         for(auto index : getBoundaries()) 
             {
         // outer boundaries
@@ -277,7 +277,7 @@ void EvacWorld::createRasters()
             {
             if ( (index._y > 204) && (index._y < 218) && (index._x > 185) && (index._x < 191) && (getValue(eObstacles, index) != 1) ) {setValue(eStairs, index, 1);}      
             }  
-        std::cout<< "NEW PART" << std::endl;
+        //std::cout<< "NEW PART" << std::endl;
          // setting up stairs sides on the eStairsSides raster
         for(auto index : getBoundaries()) 
             {
@@ -287,7 +287,7 @@ void EvacWorld::createRasters()
             }     
            
 	// compute and set exit cells - MY UPDATED VERSION
-        std::cout << "Placing Exits on Raster" << std::endl;
+        //std::cout << "Placing Exits on Raster" << std::endl;
         EvacConfig::ExitConfigList::const_iterator it=evacConfig.exitconfiglist.begin();
 	while(it!=evacConfig.exitconfiglist.end())
 	{
@@ -302,7 +302,7 @@ void EvacWorld::createRasters()
 
         // setting DOORS - NEEDS TO BE DONE AFTER OBSTACLES AND STAIRS
         
-        std::cout << "Placing Doors on Raster" << std::endl;    
+        //std::cout << "Placing Doors on Raster" << std::endl;    
     EvacConfig::DoorList::const_iterator itdoor1=evacConfig.doorList.begin();
     EvacConfig::DoorValueDirList::const_iterator itdoor2=evacConfig.doorValueList.begin();
     EvacConfig::DoorValueDirList::const_iterator itdoor3=evacConfig.doorDirList.begin();
@@ -355,7 +355,7 @@ void EvacWorld::createRasters()
                 if (getValue(eStairs, stairsornot) == 1) {setValue(eStairs, index, 2);}
                 }
             }
-                std::cout << "Doors done:" << amount << std::endl;
+                //std::cout << "Doors done:" << amount << std::endl;
         itdoor1++;
         itdoor2++;
         itdoor3++; 
@@ -364,7 +364,7 @@ void EvacWorld::createRasters()
         }
 
     // PLACING SIGNS
-        std::cout << "Placing Signs on Raster" << std::endl;
+        //std::cout << "Placing Signs on Raster" << std::endl;
     EvacConfig::SignList::const_iterator it2=evacConfig.signList.begin();
     while(it2!=evacConfig.signList.end())
 	{
@@ -377,7 +377,7 @@ void EvacWorld::createRasters()
         }
 
     // Placing Turn Positions
-            std::cout << "Placing Turns on Raster" << std::endl;
+            //std::cout << "Placing Turns on Raster" << std::endl;
     EvacConfig::TurnList::const_iterator itturn=evacConfig.turnList.begin();
     int turnNumber = 1;
     while(itturn!=evacConfig.turnList.end())
@@ -394,7 +394,7 @@ void EvacWorld::createRasters()
 
 
     // Placing Jump Positions 
-        std::cout << "Placing Jumps on Raster" << std::endl;
+        //std::cout << "Placing Jumps on Raster" << std::endl;
     EvacConfig::JumpCellsList::const_iterator itjump=evacConfig.jumpCellsfrom.begin();
     int jumpNumber = 1;
     while(itjump!=evacConfig.jumpCellsfrom.end())
@@ -488,7 +488,7 @@ void EvacWorld::createRasters()
     int k;
 // LOOP TO SET ALL RASTERS WITH 
 
-    std::cout<< "RASTER LOOP DOORS"<<std::endl;
+    //std::cout<< "RASTER LOOP DOORS"<<std::endl;
     for(k = 1; k <= evacConfig.doorNumber; k++)
         {
         Engine::Point2D<int> index, cell, goal, target;
@@ -497,7 +497,7 @@ void EvacWorld::createRasters()
 	registerDynamicRaster(doorstr.str(), true, k+evacConfig.systemRasters);
 	getDynamicRaster(k+evacConfig.systemRasters).setInitValues(-1, std::numeric_limits<int>::max(), 0); 
 
-        std::cout<< "k =" << k <<std::endl;
+        //std::cout<< "k =" << k <<std::endl;
 
         for(auto index : getBoundaries())
             {
@@ -555,7 +555,7 @@ void EvacWorld::createRasters()
 
 // POTENTIAL FIELD FOR THE STAIRS TURN SECTION
 
-    std::cout<< "RASTER LOOP TURNS"<<std::endl;
+    //std::cout<< "RASTER LOOP TURNS"<<std::endl;
     for(k = 1; k <= evacConfig.turnNumber; k++)
         {
         Engine::Point2D<int> index, cell, goal, target;
@@ -563,7 +563,7 @@ void EvacWorld::createRasters()
 	turnstr << "t" << k;
 	registerDynamicRaster(turnstr.str(), true, k+evacConfig.systemRasters+evacConfig.doorNumber);
 	getDynamicRaster(k+evacConfig.systemRasters+evacConfig.doorNumber).setInitValues(-1, std::numeric_limits<int>::max(), 0); 
-        std::cout<< "k =" << k <<std::endl;
+        //std::cout<< "k =" << k <<std::endl;
 
         for(auto index : getBoundaries())
             {
@@ -596,7 +596,7 @@ void EvacWorld::createRasters()
 
 // POTENTIAL FIELD VALUES FOR THE STAIRS JUMP SECTION
 
-    std::cout<< "RASTER LOOP JUMPS"<<std::endl;
+    //std::cout<< "RASTER LOOP JUMPS"<<std::endl;
     for(k = 1; k <= evacConfig.jumpNumber; k++)
         {
         Engine::Point2D<int> index, cell, goal, target;
@@ -604,7 +604,7 @@ void EvacWorld::createRasters()
 	jumpstr << "j" <<k;
 	registerDynamicRaster(jumpstr.str(), true, k+evacConfig.systemRasters+evacConfig.doorNumber+evacConfig.turnNumber);
 	getDynamicRaster(k+evacConfig.systemRasters+evacConfig.doorNumber+evacConfig.turnNumber).setInitValues(-1, std::numeric_limits<int>::max(), 0); 
-        std::cout<< "k =" << k <<std::endl;
+        //std::cout<< "k =" << k <<std::endl;
 
         for(auto index : getBoundaries())
             {
@@ -875,7 +875,7 @@ void EvacWorld::ResolveCompetition()
 
 void EvacWorld::stepEnvironment()
 {
-        std::cout<<"START STEP ENV"<<std::endl;
+        //std::cout<<"START STEP ENV"<<std::endl;
         ResetMass();
         ResetPanic();
         ResetOccupied();
@@ -884,9 +884,9 @@ void EvacWorld::stepEnvironment()
         ResolveCompetition();
         UpdateTempValues();
         ResetExits();
-        std::cout<<"STEP ENV TEST"<<std::endl;
-        std::cout<<"STEP "<< _step <<std::endl;
-        std::cout<<"agents left "<< al.size() <<std::endl;
+        //std::cout<<"STEP ENV TEST"<<std::endl;
+        //std::cout<<"STEP "<< _step <<std::endl;
+        //std::cout<<"agents left "<< al.size() <<std::endl;
         
  
 }
@@ -897,7 +897,7 @@ void EvacWorld::run()
 	std::stringstream logName;
 	logName << "simulation_" << getId();
 	log_INFO(logName.str(), getWallTime() << " executing " << _config->getNumSteps() << " steps...");
-        std::cout << "size=" << al.size() << "and bigger than" << ((100 - evacConfig.evacuationThreshold)*evacConfig._numAgents/100) <<std::endl;
+        //std::cout << "size=" << al.size() << "and bigger than" << ((100 - evacConfig.evacuationThreshold)*evacConfig._numAgents/100) <<std::endl;
         _step=0;
 	while( (al.size()> ((100 - evacConfig.evacuationThreshold)*evacConfig._numAgents/100)) && _step < _config->getNumSteps()) // was _agents.size()
 	{
