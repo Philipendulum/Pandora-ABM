@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
                      fileName = argv[1];
                 }
 
-		Evacuation::EvacWorld myWorld (new Evacuation::EvacConfig(fileName), myWorld.useOpenMPSingleNode());
+		Evacuation::EvacWorld myWorld (new Evacuation::EvacConfig(fileName), myWorld.useSpacePartition()); //useOpenMPSingleNode
 		
 
 		std::cout << "nthread?: " << myWorld.getNumTasks() << std::endl;
