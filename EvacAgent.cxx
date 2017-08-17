@@ -1561,6 +1561,7 @@ void EvacAgent::SetTempNextPosition()
 
     else if ((getWorld()->getValue(eRoomOrCoridor, getPosition())==0) && (getWorld()->getValue(eStairs, getPosition())!=2) && (getWorld()->getValue(eDoors, getPosition()) == 1) ) // IN A REGULAR DOOR NOT LEADING TO STAIRS - Speed will stay as _speed in from the door.
         {
+            _touchedWall = false;
             _knowledge = 0;
             _currentSpeed = returnSpeed();
             Engine::Point2D<int> index, currentPos, compare; // compare - DOOR EXIT DIRECTION NEXT POINT
@@ -1617,6 +1618,7 @@ void EvacAgent::SetTempNextPosition()
 
     else if (getWorld()->getValue(eStairs, getPosition())==2) // IN A DOOR LEADING TO STAIRS // speed will remain stairsSpeed in the door.
         {
+        _touchedWall = false;
         _knowledge = 0;
 	_currentSpeed = returnStairsSpeed();
         Engine::Point2D<int> radius, compare, currentPos, around, step;

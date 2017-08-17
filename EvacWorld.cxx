@@ -725,6 +725,13 @@ void EvacWorld::NextPosition()
             { 
                 if ( getValue(eFloor, agent->getPosition()) == getValue(eFloor, wishPos)) {agent->_evacDist = agent->_evacDist + sqrt( pow((agent->getPosition()._x - wishPos._x),2) + pow((agent->getPosition()._y - wishPos._y),2) );}
                 else if (getValue(eFloor, agent->getPosition()) != getValue(eFloor, wishPos)) {agent->_evacDist = agent->_evacDist + 1;}
+                    // NEW LINE TEST NOTMOVED PRINCIPLE
+                    if (agent->getPosition() != wishPos){agent->_notMoved = 0;}
+                    else if(agent->getPosition() == wishPos)
+                        {
+                        agent->_notMoved++;
+                        agent->_notMovedTotal++;
+                        }
 		    agent->setPosition(wishPos);
                     setValue(eOccupied, agent->getPosition(), 1);
                     setValue(eMass, agent->getPosition(), agent->returnMass()*100);
@@ -812,6 +819,8 @@ void EvacWorld::ResolveCompetition()
 			     }
                          winner = *it11;
 			 winner->_evacDist = winner->_evacDist + sqrt(pow((winner->getPosition()._x - index._x),2) + pow((winner->getPosition()._y - index._y),2));
+                    // NEW LINE TEST NOTMOVED PRINCIPLE
+                         if (winner->getPosition() != index){winner->_notMoved = 0;}
 			 winner->setPosition(index);  
 			 setValue(eOccupied, index, 1);
 		         setValue(eMass, index, winner->returnMass()*100); 
@@ -827,6 +836,8 @@ void EvacWorld::ResolveCompetition()
                       {
                          winner = closestList.front();
 			 winner->_evacDist = winner->_evacDist + sqrt(pow((winner->getPosition()._x - index._x),2) + pow((winner->getPosition()._y - index._y),2));
+                    // NEW LINE TEST NOTMOVED PRINCIPLE
+                         if (winner->getPosition() != index){winner->_notMoved = 0;}
 			 winner->setPosition(index);  
 			 setValue(eOccupied, index, 1);
 		         setValue(eMass, index, winner->returnMass()*100); 
